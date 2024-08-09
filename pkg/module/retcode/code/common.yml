@@ -1,0 +1,15 @@
+- name: OK
+  code: 0
+  message: request success
+
+- name: DirNotExist
+  code: 1000
+  message: directory path not exist
+
+- name: DirEmpty
+  code: 1001
+  message: directory path is empty
+
+- name: Error
+  code: 9999
+  message: request failed
