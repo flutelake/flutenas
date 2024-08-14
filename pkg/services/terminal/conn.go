@@ -6,12 +6,12 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/module/node"
 
 	"github.com/creack/pty"
 	"github.com/gorilla/websocket"
@@ -77,7 +77,7 @@ func (t *TerminalConn) Run() error {
 		config.Auth = append(config.Auth, ssh.Password(t.host.Password))
 	}
 	if t.host.PrivateKey != "" {
-		signers, err := readPrivateKeys(t.host.PrivateKey)
+		signers, err := node.ReadPrivateKeys(t.host.PrivateKey)
 		if err != nil {
 			return fmt.Errorf("unable to read private key: %v", err)
 		}
@@ -388,51 +388,4 @@ func (t *TerminalConn) Close() {
 	if t.recorder != nil {
 		t.recorder.Close()
 	}
-}
-
-// readPrivateKeys 读取私钥文件
-func readPrivateKeys(path string) ([]ssh.Signer, error) {
-	info, err := os.Stat(path)
-	if err != nil {
-		return nil, fmt.Errorf("stat private path error: %v", err)
-	}
-	var signers []ssh.Signer
-	filePaths := []string{}
-	if info.IsDir() {
-		files, err := os.ReadDir(path)
-		if err != nil {
-			return nil, fmt.Errorf("unable to read %s directory: %v", path, err)
-		}
-
-		for _, file := range files {
-			if file.IsDir() {
-				continue
-			}
-			if strings.HasSuffix(file.Name(), ".pub") || file.Name() == "authorized_keys" || file.Name() == "config" || file.Name() == "known_hosts" {
-				continue // 跳过非私钥文件
-			}
-
-			filePath := filepath.Join(path, file.Name())
-			filePaths = append(filePaths, filePath)
-		}
-	} else {
-		filePaths = append(filePaths, path)
-	}
-	for _, filePath := range filePaths {
-		key, err := os.ReadFile(filePath)
-		if err != nil {
-			fmt.Printf("unable to read private key file %s: %v\n", filePath, err)
-			continue // 读取失败，尝试下一个文件
-		}
-
-		signer, err := ssh.ParsePrivateKey(key)
-		if err != nil {
-			fmt.Printf("unable to parse private key file %s: %v\n", filePath, err)
-			continue // 解析失败，尝试下一个文件
-		}
-
-		signers = append(signers, signer)
-	}
-
-	return signers, nil
 }
