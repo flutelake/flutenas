@@ -24,11 +24,11 @@ func RegisteHandlersV1(
 
 	// test api
 	as.Register(as.NewRoute().Prefix(prefix).Path("/hello").Handler(HelloFluteNAS).AllowAnonymous(true))
-	// public apis
+	// =================================== public apis ===================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/login").Handler(authApi.Login).AllowAnonymous(true))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/key").Handler(authApi.GetKey).AllowAnonymous(true))
 
-	// private apis
+	//==================================== private apis ==================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/terminal").Handler(termApi.CreateTerminal))
 
 	// file download server
@@ -40,6 +40,9 @@ func RegisteHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/files/remove").Handler(v1.RemoveFile))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/files/upload").Handler(v1.UploadFiles))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/files/download").Handler(fserver.DownloadFiles))
+
+	// disk device
+	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/list").Handler(v1.ListDiskDevices))
 }
 
 func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {

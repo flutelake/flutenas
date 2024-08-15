@@ -8,12 +8,15 @@ type ListDiskDevicesResponse struct {
 }
 
 type DiskDevice struct {
-	Name   string
-	Type   string
-	Path   string
-	Size   uint64
-	Vendor string
-	Model  string
-	Serial string
-	WWN    string
+	Name         string
+	Type         string
+	Size         string
+	Vendor       string
+	Model        string
+	Serial       string
+	WWN          string
+	MountPoint   string
+	HotPlug      bool
+	Rota         bool
+	IsSystemDisk bool
 }

@@ -12,3 +12,14 @@ func FormatStorageSize(size uint64) string {
 	}
 	return fmt.Sprintf("%d%s", size, storageUnit[unit])
 }
+
+func StringToBool(str string) bool {
+	switch str {
+	case "true", "1":
+		return true
+	case "false":
+		return false
+	default:
+		return false
+	}
+}

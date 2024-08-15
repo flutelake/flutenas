@@ -4,20 +4,20 @@ import (
 	"bufio"
 	"bytes"
 	"flutelake/fluteNAS/pkg/model"
+	"flutelake/fluteNAS/pkg/util"
 	"fmt"
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 )
 
-func DescribeDisk(host string) ([]model.DiskDevice, error) {
-	// 查看所有的设备
-	// 类型 FSTYPE 数据在某些情况下不准确和 blkid 显示 Type 数据不一致，不能有效判断是否拥有 LV，即便所在节点重启后数据恢复正常
-	cmd := exec.Command("sh", "-c", "lsblk", "-ndpbP", "-oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR")
-	output, err := cmd.Output()
+func DescribeDisk() ([]model.DiskDevice, error) {
+	exec := NewExec().SetHost("10.0.1.10")
+	defer exec.Close()
+
+	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,PKNAME,MODEL")
 	if err != nil {
-		return nil, fmt.Errorf("[exec.Command] error: %s", err)
+		return nil, fmt.Errorf("exec error: %s", err)
 	}
 
 	blocks := make([]string, 0, 10)
@@ -26,39 +26,62 @@ func DescribeDisk(host string) ([]model.DiskDevice, error) {
 		blocks = append(blocks, sc.Text())
 	}
 
-	disks := make([]model.DiskDevice, 0, 3)
+	systemDisk := ""
+
+	disks := make([]model.DiskDevice, 0)
 	for _, v := range blocks {
 		fields := strings.Fields(strings.ReplaceAll(v, `"`, ``))
 		// if len(fields) != 3 {
 		// 	continue
 		// }
 		disk := model.DiskDevice{}
+		pkname := ""
 		for _, f := range fields {
 			strs := strings.Split(f, "=")
 			if len(strs) != 2 {
 				continue
 			}
 			switch strs[0] {
-			case "SN":
-				disk.Serial = strs[1]
 			case "NAME":
 				disk.Name = strs[1]
+			case "SERIAL":
+				disk.Serial = strs[1]
 			case "SIZE":
 				size, _ := strconv.ParseUint(strs[1], 10, 64)
-				disk.Size = size
+				disk.Size = util.FormatStorageSize(size)
 			case "TYPE":
 				disk.Type = strs[1]
 			case "WWN":
 				disk.WWN = strs[1]
 			case "VENDOR":
 				disk.Vendor = strs[1]
-			// case "MODEL":
-			// 	disk.Model = strs[1]
+			case "MOUNTPOINT":
+				disk.MountPoint = strs[1]
+			case "HOTPLUG":
+				disk.HotPlug = util.StringToBool(strs[1])
+			case "ROTA":
+				disk.Rota = util.StringToBool(strs[1])
+			case "MODEL":
+				disk.Model = strs[1]
+			case "PKNAME":
+				pkname = strs[1]
 			default:
 				continue
 			}
 		}
+		if disk.Type == "part" {
+			if disk.MountPoint == "/" {
+				systemDisk = pkname
+			}
+			continue
+		}
 		disks = append(disks, disk)
+	}
+
+	for i, d := range disks {
+		if d.Name == systemDisk {
+			disks[i].IsSystemDisk = true
+		}
 	}
 
 	sort.Slice(disks, func(i, j int) bool {
