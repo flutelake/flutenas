@@ -33,3 +33,13 @@ type MountPoint struct {
 	Device string `json:"Device"`
 	Path   string `json:"PATH"`
 }
+
+type SetMountPointRequest struct {
+	Node   string `json:"Node" validate:"required"`
+	Device string `json:"Device" validate:"required"`
+	UUID   string `json:"UUID" validate:"required"`
+	Path   string `json:"Path" validate:"required"`
+}
+
+type SetMountPointResponse struct {
+}

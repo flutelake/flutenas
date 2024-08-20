@@ -43,6 +43,7 @@ func RegisteHandlersV1(
 
 	// disk device
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/list").Handler(v1.ListDiskDevices))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/set-mountpoint").Handler(v1.SetMountPoint))
 }
 
 func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {
