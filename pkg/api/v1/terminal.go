@@ -4,7 +4,7 @@ import (
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
-	"flutelake/fluteNAS/pkg/services/terminal"
+	"flutelake/fluteNAS/pkg/server/terminal"
 	"flutelake/fluteNAS/pkg/util"
 )
 
