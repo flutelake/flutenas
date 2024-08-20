@@ -6,11 +6,12 @@ var storageUnit = []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB",
 
 func FormatStorageSize(size uint64) string {
 	unit := 0
-	for size > 1024 {
-		size = size / 1024
+	sizeFloat := float64(size)
+	for sizeFloat > 1024 {
+		sizeFloat = sizeFloat / 1024
 		unit = unit + 1
 	}
-	return fmt.Sprintf("%d%s", size, storageUnit[unit])
+	return fmt.Sprintf("%.2f%s", sizeFloat, storageUnit[unit])
 }
 
 func StringToBool(str string) bool {

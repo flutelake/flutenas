@@ -15,7 +15,7 @@ func DescribeDisk() ([]model.DiskDevice, error) {
 	exec := NewExec().SetHost("10.0.1.10")
 	defer exec.Close()
 
-	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,PKNAME,MODEL")
+	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,FSTYPE,PKNAME,MODEL,UUID,PTUUID")
 	if err != nil {
 		return nil, fmt.Errorf("exec error: %s", err)
 	}
@@ -63,8 +63,14 @@ func DescribeDisk() ([]model.DiskDevice, error) {
 				disk.Rota = util.StringToBool(strs[1])
 			case "MODEL":
 				disk.Model = strs[1]
+			case "FSTYPE":
+				disk.FsType = strs[1]
 			case "PKNAME":
 				pkname = strs[1]
+			case "UUID":
+				disk.UUID = strs[1]
+			case "PTUUID":
+				disk.PartUUID = strs[1]
 			default:
 				continue
 			}
@@ -73,6 +79,9 @@ func DescribeDisk() ([]model.DiskDevice, error) {
 			if disk.MountPoint == "/" {
 				systemDisk = pkname
 			}
+			continue
+		}
+		if disk.Type != "disk" {
 			continue
 		}
 		disks = append(disks, disk)

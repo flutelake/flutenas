@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flutelake/fluteNAS/pkg/api"
+	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/cache"
 	"flutelake/fluteNAS/pkg/module/flog"
 	"flutelake/fluteNAS/pkg/server/apiserver"
@@ -90,6 +91,7 @@ func initDB(pStr string) error {
 
 	// Migrate the table schema
 	err := db.Instance().AutoMigrate(
+		&model.MountPoint{},
 	// &Network{},
 	// &Host{},
 	// &Operation{},
