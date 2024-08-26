@@ -10,20 +10,21 @@ type ListDiskDevicesResponse struct {
 }
 
 type DiskDevice struct {
-	Name         string
-	Type         string
-	Size         string
-	Vendor       string
-	Model        string
-	Serial       string
-	WWN          string
-	MountPoint   string
-	FsType       string // filesytem type, empty if not formatted
-	UUID         string // filesystem UUID, empty if not formatted
-	PartUUID     string // Partition UUID, emtpty if not partitioned
-	HotPlug      bool
-	Rota         bool
-	IsSystemDisk bool
+	Name           string
+	Type           string
+	Size           string
+	Vendor         string
+	Model          string
+	Serial         string
+	WWN            string
+	MountPoint     string
+	SpecMountPoint string
+	FsType         string // filesytem type, empty if not formatted
+	UUID           string // filesystem UUID, empty if not formatted
+	PartUUID       string // Partition UUID, emtpty if not partitioned
+	HotPlug        bool
+	Rota           bool
+	IsSystemDisk   bool
 }
 
 type MountPoint struct {

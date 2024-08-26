@@ -49,6 +49,7 @@ export class DiskDevice {
     Serial: string;
     WWN: string;
     MountPoint: string;
+    SpecMountPoint: string;
     FsType: string;
     UUID: string;
     PartUUID: string;
@@ -66,6 +67,7 @@ export class DiskDevice {
         Serial: string,
         WWN: string,
         MountPoint: string,
+        SpecMountPoint: string,
         HotPlug: boolean,
         FsType: string,
         UUID: string,
@@ -81,6 +83,7 @@ export class DiskDevice {
         this.Serial = Serial;
         this.WWN = WWN;
         this.MountPoint = MountPoint;
+        this.SpecMountPoint = SpecMountPoint;
         this.FsType = FsType;
         this.UUID = UUID;
         this.PartUUID = PartUUID;
@@ -111,6 +114,7 @@ export class DiskDevice {
             data.Serial,
             data.WWN,
             data.MountPoint,
+            data.SpecMountPoint,
             data.HotPlug,
             data.FsType,
             data.UUID,

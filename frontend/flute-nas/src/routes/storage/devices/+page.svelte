@@ -7,6 +7,8 @@
 	import MetaTag from '../../../components/MetaTag.svelte';
 	import { FluteAPI } from '$lib/api';
 	import { DiskDevice } from '$lib/model';
+	import SetMountPointModal from '../../../components/storage/SetMountPointModal.svelte';
+	export let node : string = 'localhost';
 
 	let hidden: boolean = true; // modal control
 
@@ -25,15 +27,25 @@
 	};
 
 	let devices :DiskDevice[] = [];
- 	onMount(() => {
-		console.log(111)
+	function refreshList() {
 		const api = new FluteAPI();
         api.post("/v1/disk/list", {}).then(resp => {
 			devices = DiskDevice.UmarshalArray(resp.data.Devices);
         }).catch(err => {
             console.log(err)
         })
+	}
+ 	onMount(() => {
+		refreshList()
 	})
+
+	let openSetMountPointModal :boolean = false;
+	let currentDevice :DiskDevice;
+	function toggleSetMountPointModal(d :DiskDevice) {
+		console.log('aa')
+		currentDevice = d;
+		openSetMountPointModal = !openSetMountPointModal
+	}
 </script>
 
 <MetaTag {path} {description} {title} {subtitle} />
@@ -67,21 +79,35 @@
 			{#each devices as d}
 				<TableBodyRow class="text-base">
 					<TableBodyCell class="w-4 p-4"><Checkbox /></TableBodyCell>
-					<TableBodyCell class="flex items-center space-x-6 whitespace-nowrap p-4">
+					<TableBodyCell class="max-w-sm overflow-hidden truncate p-4 text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs">
 						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 							<div class="text-base font-semibold text-gray-900 dark:text-white">
 								{d.Name.replace('/dev/', '')}
 							</div>
+							{#if d.IsSystemDisk }
 							<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 								{ d.IsSystemDisk ? 'BootDisk' : '' }
 							</div>
+							{/if}
 						</div>
 					</TableBodyCell>
 					<TableBodyCell class="p-4">{d.Size}</TableBodyCell>
 					<TableBodyCell class="p-4">{d.Serial}</TableBodyCell>
 					<TableBodyCell
 						class="max-w-sm overflow-hidden truncate p-4 text-base font-normal text-gray-500 dark:text-gray-400 xl:max-w-xs"
-						>{d.MountPoint}</TableBodyCell>
+						>
+						<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+							<div class="text-base font-semibold text-gray-900 dark:text-white">
+								{d.MountPoint}
+							</div>
+							{#if d.SpecMountPoint }
+							<!-- todo Pending 可以加一个问号的小图标解释其含义 -->
+							<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
+								Pending: { d.SpecMountPoint }
+							</div>
+							{/if}
+						</div>
+					</TableBodyCell>
 					<TableBodyCell class="p-4">{d.Vendor}</TableBodyCell>
 					<TableBodyCell class="p-4">{d.FsType}</TableBodyCell>
 					<!-- <TableBodyCell class="p-4">{d.PartUUID == '' ? 'No' : 'Yes'}</TableBodyCell> -->
@@ -96,7 +122,7 @@
 						<Button size="sm" class="gap-2 px-3">
 							<EditOutline size="sm" /> mkfs
 						</Button>
-						<Button color="red" size="sm" class="gap-2 px-3">
+						<Button color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
 							<TrashBinSolid size="sm" /> setMountPoint
 						</Button>
 					</TableBodyCell>
@@ -153,3 +179,4 @@
 	</div>
 </main>
 
+<SetMountPointModal bind:open={openSetMountPointModal} bind:node={node} bind:disk={currentDevice} on:refesh_list_msg={()=>refreshList()}></SetMountPointModal>

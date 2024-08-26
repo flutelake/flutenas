@@ -7,6 +7,7 @@ import (
 	"flutelake/fluteNAS/pkg/module/node"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
+	"path/filepath"
 )
 
 func ListDiskDevices(w *apiserver.Response, r *apiserver.Request) {
@@ -22,6 +23,19 @@ func ListDiskDevices(w *apiserver.Response, r *apiserver.Request) {
 		return
 	}
 
+	// 处理预期的挂载点和实际的挂载点不一致的问题
+	var mountPoints []model.MountPoint
+	db.Instance().Model(&model.MountPoint{}).Find(&mountPoints)
+	mpMap := make(map[string]string, 0)
+	for _, mp := range mountPoints {
+		mpMap[mp.UUID] = mp.Path
+	}
+	for i, disk := range disks {
+		if mp, ok := mpMap[disk.UUID]; ok && mp != disk.MountPoint {
+			disks[i].SpecMountPoint = mp
+		}
+	}
+
 	out := &model.ListDiskDevicesResponse{
 		Devices: disks,
 	}
@@ -34,11 +48,15 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 		w.WriteError(err, retcode.StatusError(nil))
 		return
 	}
+	// todo 挂载前缀改成使用配置
+	p := filepath.Join("/mnt", in.Path)
+	// todo 检查是否已经存在挂载点
+	// todo 检查是否已经挂载，如果已经挂载需要先解挂载（解挂可能会遇到device busy的问题），再重新挂载
 
 	result := db.Instance().FirstOrCreate(&model.MountPoint{
 		UUID:   in.UUID,
 		Node:   in.Node,
-		Path:   in.Path,
+		Path:   p,
 		Device: in.Device,
 	}, "UUID = ?", in.UUID)
 	if result.Error != nil {

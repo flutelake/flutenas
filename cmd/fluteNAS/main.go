@@ -19,16 +19,16 @@ func init() {
 	flog.NewLogger(1000)
 
 	// init api router
-	_, err := initDataDir()
+	dataPath, err := initDataDir()
 	if err != nil {
 		flog.Fatal(err)
 	}
 
 	// init database
-	// err = initDB(dataPath)
-	// if err != nil {
-	// 	flog.Fatal(err)
-	// }
+	err = initDB(dataPath)
+	if err != nil {
+		flog.Fatal(err)
+	}
 }
 
 // type FluteNAS struct {
