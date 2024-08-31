@@ -13,3 +13,12 @@ func TestDescribeDisk(t *testing.T) {
 	}
 	fmt.Println(len(got))
 }
+
+func TestDescribeMountedPoint(t *testing.T) {
+	got, err := DescribeMountedPoint()
+	if err != nil {
+		t.Errorf("DescribeMountedPoint() error = %v", err)
+		return
+	}
+	fmt.Println(len(got))
+}

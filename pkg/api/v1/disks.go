@@ -7,6 +7,7 @@ import (
 	"flutelake/fluteNAS/pkg/module/node"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
+	"fmt"
 	"path/filepath"
 )
 
@@ -48,10 +49,40 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 		w.WriteError(err, retcode.StatusError(nil))
 		return
 	}
+
 	// todo 挂载前缀改成使用配置
 	p := filepath.Join("/mnt", in.Path)
-	// todo 检查是否已经存在挂载点
-	// todo 检查是否已经挂载，如果已经挂载需要先解挂载（解挂可能会遇到device busy的问题），再重新挂载
+
+	// 检查是否已经挂载
+	mounted := false
+	mountedOther := ""
+	points, err := node.DescribeMountedPoint()
+	if err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+	for _, item := range points {
+		if item.Device == in.Device {
+			if item.Point == p {
+				mounted = true
+			} else {
+				mountedOther = item.Point
+			}
+		}
+	}
+	if mounted {
+		// 已经挂载， 且路径一致
+		w.Write(retcode.StatusOK(&model.SetMountPointResponse{}))
+		return
+	}
+	if mountedOther != "" {
+		// 已经挂载，但是路径不一致，需要先解挂载
+		_, err := node.Shell(fmt.Sprintf("umount %s", mountedOther))
+		if err != nil {
+			// 解卦失败的问题，暂时不返回错误，等控制器来解挂
+			flog.Errorf("umount  %s failed: %v", mountedOther, err)
+		}
+	}
 
 	result := db.Instance().FirstOrCreate(&model.MountPoint{
 		UUID:   in.UUID,

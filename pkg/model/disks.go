@@ -35,6 +35,14 @@ type MountPoint struct {
 	Path   string `json:"PATH"`
 }
 
+// result of mount -l on node
+type MountedPoint struct {
+	Device  string `json:"Device"`
+	Point   string `json:"Point"`
+	FsType  string `json:"FsType"`
+	Options string `json:"Options"`
+}
+
 type SetMountPointRequest struct {
 	Node   string `json:"Node" validate:"required"`
 	Device string `json:"Device" validate:"required"`

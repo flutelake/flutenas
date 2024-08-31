@@ -98,3 +98,48 @@ func DescribeDisk() ([]model.DiskDevice, error) {
 	})
 	return disks, nil
 }
+
+func DescribeMountedPoint() ([]model.MountedPoint, error) {
+	exec := NewExec().SetHost("10.0.1.10")
+	defer exec.Close()
+
+	output, err := exec.Command("mount -l")
+	if err != nil {
+		return nil, fmt.Errorf("exec error: %s", err)
+	}
+
+	// lines := make([]string, 0, 10)
+	result := make([]model.MountedPoint, 0)
+	sc := bufio.NewScanner(bytes.NewReader(output))
+	for sc.Scan() {
+		// lines = append(lines, sc.Text())
+		line := sc.Text()
+		fields := strings.Fields(line)
+
+		point := model.MountedPoint{}
+		if len(fields) >= 3 {
+			if fields[1] == "on" {
+				point.Device = fields[0]
+				point.Point = fields[2]
+			}
+		} else {
+			continue
+		}
+
+		if len(fields) >= 5 {
+			if fields[3] == "type" {
+				point.FsType = fields[4]
+			}
+		}
+
+		if len(fields) >= 6 {
+			opt := fields[5]
+			opt, _ = strings.CutPrefix(opt, "(")
+			opt, _ = strings.CutSuffix(opt, ")")
+			point.Options = opt
+		}
+		result = append(result, point)
+	}
+
+	return result, nil
+}
