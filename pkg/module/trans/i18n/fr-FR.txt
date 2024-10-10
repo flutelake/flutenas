@@ -1,0 +1,3 @@
+ACC0000:Cher(e) {{.Name}}, bonjour !
+ACC0001:Vous activez votre compte, veuillez cliquer sur le lien ci-dessous pour terminer l’activation
+ACC0002:(Si le lien est invalide, veuillez copier l’adresse dans la barre d’adresse de votre navigateur et ouvrez-la)

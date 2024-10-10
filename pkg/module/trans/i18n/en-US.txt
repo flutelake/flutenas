@@ -1,0 +1,3 @@
+ACC0000:Dear {{.Name}}, hello!
+ACC0001:You are activating your account, please click the link below to complete the activation
+ACC0002:(If the link is invalid, please copy the address to your browser’s address bar and open it)

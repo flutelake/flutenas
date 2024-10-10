@@ -1,0 +1,3 @@
+ACC0000:Estimado(a) {{.Name}}, hola!
+ACC0001:Estás activando tu cuenta, por favor haz clic en el enlace de abajo para completar la activación
+ACC0002:(Si el enlace no es válido, por favor copia la dirección en la barra de direcciones de tu navegador y ábrela)

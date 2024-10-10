@@ -1,0 +1,3 @@
+ACC0000:Prezado(a) {{.Name}}, olá!
+ACC0001:Você está ativando sua conta, por favor, clique no link abaixo para completar a ativação
+ACC0002:(Se o link estiver inválido, por favor, copie o endereço para a barra de endereços do navegador e abra-o)
