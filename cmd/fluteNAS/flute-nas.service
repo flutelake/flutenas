@@ -1,0 +1,20 @@
+[Unit]
+Description=flute-nas
+Wants=network-online.target data.mount
+After=network-online.target data.mount
+
+[Service]
+
+WorkingDirectory=/opt/flute-nas
+Environment="ENV=prod"
+ExecStart=/opt/flute-nas/flute-nas-server
+
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=always
+RestartSec=5
+KillMode=process
+CPUQuota=100%
+MemoryLimit=256M
+
+[Install]
+WantedBy=multi-user.target

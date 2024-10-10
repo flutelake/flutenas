@@ -2,23 +2,32 @@ package apiserver
 
 import (
 	"context"
+	"embed"
+	"errors"
 	"flutelake/fluteNAS/pkg/module/cache"
 	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/util"
 	"fmt"
+	"io"
+	"io/fs"
+	"mime"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
+	"path/filepath"
 )
 
 type Apiserver struct {
 	DataPath string
 	// Routes   map[string]*Route
 	// Server   *http.Server
-	serveMux *http.ServeMux
-	cache    cache.TinyCache
-	address  string
-	certKey  string
-	certPerm string
+	serveMux   *http.ServeMux
+	cache      cache.TinyCache
+	address    string
+	certKey    string
+	certPerm   string
+	frontendFS embed.FS
 }
 
 func NewApiserver(c cache.TinyCache) *Apiserver {
@@ -62,14 +71,43 @@ func (s *Apiserver) Run(ctx context.Context) (err error) {
 		// _ = s.Server.Shutdown(context.Background())
 	}()
 
-	// develop for frontend route
-	targetURL, err := url.Parse("http://10.0.1.106:5173")
-	if err != nil {
-		flog.Fatalf("Invalid frontend proxy target URL, %v", err)
+	env := os.Getenv("ENV")
+	if env == "prod" {
+		// 生产环境由后端提供前端文件路由服务
+		index, err := s.frontendFS.ReadFile("build/index.html")
+		if err != nil {
+			panic(err)
+		}
+		s.serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			clientIP := util.GetClientIP(r)
+			defer flog.Infof("WebServer [%s %s] [client: %s]", r.Method, r.RequestURI, clientIP.String())
+			// r.RequestURI 自带'/'前缀
+			absolute := "build" + r.RequestURI
+			ext := filepath.Ext(absolute)
+			bs, err := s.frontendFS.Open(absolute)
+			if err != nil {
+				if errors.Is(err, fs.ErrNotExist) {
+					w.Write(index)
+					return
+				}
+
+				flog.Errorf("WebServer [%s %s], [error] %s", r.Method, r.RequestURI, err.Error())
+			}
+			contentType := mime.TypeByExtension(ext)
+			w.Header().Set("Content-Type", contentType)
+			io.Copy(w, bs)
+		})
+	} else {
+		// 开发环境由前端Webserver提供服务
+		// develop for frontend route
+		targetURL, err := url.Parse("http://10.0.1.106:5173")
+		if err != nil {
+			flog.Fatalf("Invalid frontend proxy target URL, %v", err)
+		}
+		proxy := httputil.NewSingleHostReverseProxy(targetURL)
+		s.serveMux.Handle("/", proxy)
+		// develop for frontend route --------- end
 	}
-	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-	s.serveMux.Handle("/", proxy)
-	// develop for frontend route --------- end
 
 	flog.Infof("Starting server on %s", s.address)
 	if s.certKey != "" {
@@ -79,4 +117,8 @@ func (s *Apiserver) Run(ctx context.Context) (err error) {
 	}
 
 	return err
+}
+
+func (s *Apiserver) SetFrontendFS(fs embed.FS) {
+	s.frontendFS = fs
 }

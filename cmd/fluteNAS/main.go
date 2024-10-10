@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	flutenasf "flutelake/fluteNAS/frontend/flute-nas"
 	"flutelake/fluteNAS/pkg/api"
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/cache"
@@ -40,9 +41,12 @@ func init() {
 // }
 
 func main() {
+
 	c := cache.NewMemoryCache()
 
 	server := apiserver.NewApiserver(c)
+	// 前端文件
+	server.SetFrontendFS(flutenasf.FrontendFiles)
 	privateKey, publicKey, err := util.GenerateRSAKeyPair(512)
 	if err != nil {
 		flog.Fatal(err)
