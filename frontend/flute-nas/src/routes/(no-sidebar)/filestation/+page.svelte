@@ -16,8 +16,11 @@
 
 	let entries :FileEntry[] = []
 	let dirPath :string = '/'
+	let loading : boolean = false
 	$: readDir(dirPath)
 	function readDir(dirPath :string = '/') {
+		entries = []
+		loading = true
 		const api = new FluteAPI()
 		const originDirPath = dirPath
 		api.post("/v1/files/readdir", {"Path": dirPath}).then(resp => {
@@ -29,10 +32,12 @@
 				// push 不会触发重新渲染，需要手动赋值一下
 				entries = entries;
 			});
-			console.log(entries)
+			// console.log(entries)
+			loading = false
 		}).catch(err => {
 			dirPath = originDirPath
 			console.log(err)
+			loading = false
 		})
 	}
 
@@ -134,7 +139,7 @@
 						</div>
 					</div>
 				</div>
-				<FileTable files={entries} bind:dirPath={dirPath} on:refesh_list_msg={()=>readDir(dirPath)}></FileTable>
+				<FileTable files={entries} bind:loading={loading} bind:dirPath={dirPath} on:refesh_list_msg={()=>readDir(dirPath)}></FileTable>
 			</Card>
 		</div>
 	</div>

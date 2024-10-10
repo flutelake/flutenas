@@ -6,7 +6,7 @@ VERSION_FLAG=-X '$(GO_MODULE_NAME)/pkg/version.gitBranch=`git branch --show-curr
 -X '$(GO_MODULE_NAME)/pkg/version.buildDate=`date +'%Y-%m-%dT%H:%M:%SZ'`'
 
 GO_LDFLAGS :=-ldflags "-s $(VERSION_FLAG)"
-GO_ENV := CGO_ENABLED=0 GOOS=linux
+GO_ENV := CGO_ENABLED=1 GOOS=linux
 GO_ENV_AMD64 := GOARCH=amd64
 GO_ENV_ARM64:= GOARCH=arm64
 GO_ENV_SW64:= GOARCH=sw64
@@ -16,5 +16,15 @@ DIST_DIR_ARM64 := dist/aarch64
 DIST_DIR_SW64 := dist/sw64
 DIST_DIR_MIPS64LE := dist/mips64le
 
-make all:
+all:
+	cd frontend/flute-nas/ && pnpm build
 	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
+
+frontend:
+	cd frontend/flute-nas/ && pnpm build
+
+server:
+	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
+
+start_frontend:
+	cd frontend/flute-nas/ && pnpm dev

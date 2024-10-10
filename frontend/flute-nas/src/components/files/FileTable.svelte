@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { FileEntry } from '$lib/model';
+	import { FileEntry } from '$lib/model';
   import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
   import { A } from 'flowbite-svelte';
-  import { FolderOpenSolid } from 'flowbite-svelte-icons';
+  import { FolderOpenSolid, RefreshOutline } from 'flowbite-svelte-icons';
   import { formatSize } from '$lib/index';
   import DeleteModal from './DeleteModal.svelte';
   import { createEventDispatcher } from 'svelte';
@@ -11,6 +11,7 @@
 
   export let files: FileEntry[] = [];
   export let dirPath : string = '/';
+  export let loading : boolean = false;
 
   function forward() {
     const pathParts = dirPath.split('/').filter(Boolean);
@@ -36,6 +37,7 @@
     })
 	}
 
+  const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
   let openDeleteModal :boolean = false;
   let deleteFileName :string = '';
 </script>
@@ -49,6 +51,15 @@
       <TableHeadCell>Actions</TableHeadCell>
     </TableHead>
     <TableBody tableBodyClass="divide-y">
+        {#if loading}
+        <TableBodyRow>
+          <TableBodyCell><A href="#" on:click={forward}><RefreshOutline class="spin-fast"></RefreshOutline>&nbsp;Loading... Please wait </A></TableBodyCell>
+          <TableBodyCell>&nbsp;</TableBodyCell>
+          <TableBodyCell>&nbsp;</TableBodyCell>
+          <TableBodyCell>&nbsp;</TableBodyCell>
+          <TableBodyCell>&nbsp;</TableBodyCell>
+        </TableBodyRow>
+        {/if}
         {#if dirPath != '' && dirPath != '/'}
         <TableBodyRow>
           <TableBodyCell><A href="#" on:click={forward}><FolderOpenSolid></FolderOpenSolid>&nbsp;...</A></TableBodyCell>
@@ -66,7 +77,7 @@
             <TableBodyCell>&nbsp;{file.name}</TableBodyCell>
             {/if}
             <TableBodyCell>{file.isDir ? '' : formatSize(file.size)}</TableBodyCell>
-            <TableBodyCell>{new Date(file.lastMod).toLocaleString()}</TableBodyCell>
+            <TableBodyCell>{new Date(file.lastMod).toLocaleString('zh-CN', dateTimeOptions)}</TableBodyCell>
             <TableBodyCell>{file.isDir ? '' : file.kind}</TableBodyCell>
             <TableBodyCell>
             <A href="#" on:click={() => {downlodFilename = file.name; handleDownload()}}>Download</A>
