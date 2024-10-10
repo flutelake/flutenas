@@ -14,7 +14,7 @@ Restart=always
 RestartSec=5
 KillMode=process
 CPUQuota=100%
-MemoryLimit=256M
+MemoryMax=256M
 
 [Install]
 WantedBy=multi-user.target
