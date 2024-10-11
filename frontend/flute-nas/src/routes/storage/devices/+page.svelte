@@ -11,6 +11,7 @@
 	export let node : string = 'localhost';
 
 	let hidden: boolean = true; // modal control
+	let loading: boolean = false;
 
 	const toggle = (component: ComponentType) => {
 		hidden = !hidden;
@@ -28,11 +29,18 @@
 
 	let devices :DiskDevice[] = [];
 	function refreshList() {
+		if (loading) {
+			// 防重复点击
+			return
+		}
+		loading = true;
 		const api = new FluteAPI();
         api.post("/v1/disk/list", {}).then(resp => {
 			devices = DiskDevice.UmarshalArray(resp.data.Devices);
+			loading = false;
         }).catch(err => {
             console.log(err)
+			loading = false;
         })
 	}
  	onMount(() => {
@@ -63,7 +71,13 @@
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div slot="end" class="space-x-2">
 				<!-- on:click={() => toggle("")} -->
-				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80"><RefreshOutline class="w-6 h-6" /></Button>
+				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList()}} >
+					{#if loading}
+					<RefreshOutline class="w-6 h-6 spin-fast"/>&nbsp; Loading... Please wait
+					{:else}
+					<RefreshOutline class="w-6 h-6"/>
+					{/if}
+				</Button>
 				<!-- <Button class="whitespace-nowrap" >Add new product</Button> -->
 			</div>
 		</Toolbar>
