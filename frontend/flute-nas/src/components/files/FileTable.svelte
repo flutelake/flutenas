@@ -37,7 +37,7 @@
     })
 	}
 
-  const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' } as const;
   let openDeleteModal :boolean = false;
   let deleteFileName :string = '';
 </script>

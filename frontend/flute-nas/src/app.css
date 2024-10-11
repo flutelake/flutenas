@@ -1,3 +1,8 @@
 @import 'tailwindcss/base';
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
+
+.spin-fast {
+    @apply animate-spin;
+    animation-duration: 0.5s; /* 更快的旋转速度 */
+}
