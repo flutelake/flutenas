@@ -1,6 +1,5 @@
 <script>
     import { Alert } from 'flowbite-svelte';
-    export const prerender = true;
 </script>
   
 <div class="p-8">
