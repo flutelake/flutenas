@@ -8,7 +8,6 @@
 	import { onMount } from 'svelte';
 	import { FluteAPI } from '$lib/api';
 	import { FileEntry, FileProgress } from '$lib/model';
-	import { formatSpeed } from '$lib/index'
 	import {RefreshOutline, UploadSolid} from 'flowbite-svelte-icons'
 	import { Frame } from 'flowbite-svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
@@ -68,22 +67,29 @@
 			setTimeout(async function(){
 				selectFiles = e.detail
 				for (let i = 0; i < selectFiles.length; i++) {
-					const startTime = Date.now(); // 记录开始时间
 					await api.uploadFile(
 						dirPath,
 						selectFiles[i], 
-						(progressEvent :any) => { // 监听上传进度
-						const { loaded, total } = progressEvent;
-						if (total !== undefined) {
-							const percentCompleted = Math.round((loaded * 100) / total); // 计算百分比
-							const elapsedTime = (Date.now() - startTime) / 1000; // 计算已用时间
-							speed = formatSpeed(loaded / 1024 / elapsedTime) // 计算网速 (KB/s)
+						// (progressEvent :any) => { // 监听上传进度
+						// 	const { loaded, total } = progressEvent;
+						// 	if (total !== undefined) {
+						// 		const percentCompleted = Math.round((loaded * 100) / total); // 计算百分比
+						// 		const elapsedTime = (Date.now() - startTime) / 1000; // 计算已用时间
+						// 		speed = formatSpeed(loaded / 1024 / elapsedTime) // 计算网速 (KB/s)
+
+						// 		selectFiles[i].updateProgress(percentCompleted)
+						// 		selectFiles = selectFiles
+						// 		console.log(`上传进度: ${selectFiles[i].progress}% | 网速: ${speed} KB/s`); // 输出进度和网速
+						// 	}
+						// }
+						(percentCompleted :any, formattedSpeed: any) => {
 
 							selectFiles[i].updateProgress(percentCompleted)
 							selectFiles = selectFiles
+							speed = formattedSpeed
 							console.log(`上传进度: ${selectFiles[i].progress}% | 网速: ${speed} KB/s`); // 输出进度和网速
 						}
-                	})
+                	)
 					// 每上传一个文件 刷新一下文件列表
 					readDir(dirPath)
 				}
