@@ -20,6 +20,14 @@ all:
 	cd frontend/flute-nas/ && pnpm build
 	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
 
+#################### dev commands ####################
+deploy:
+	rsync -avP dist/x86_64/flute-nas-server root@10.0.1.10:/opt/flute-nas/
+	ssh root@10.0.1.10 "systemctl restart flute-nas"
+	
+mpush: all deploy
+#################### dev commands end ####################
+
 frontend:
 	cd frontend/flute-nas/ && pnpm build
 

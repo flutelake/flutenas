@@ -3,6 +3,9 @@ module flutelake/fluteNAS
 go 1.22.5
 
 require (
+	github.com/creack/pty v1.1.21
+	github.com/flosch/pongo2 v0.0.0-20200913210552-0d938eb266f3
+	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gorilla/websocket v1.5.3
 	golang.org/x/crypto v0.25.0
 	golang.org/x/term v0.22.0
@@ -11,13 +14,12 @@ require (
 )
 
 require (
-	github.com/creack/pty v1.1.21 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.22.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
 require (

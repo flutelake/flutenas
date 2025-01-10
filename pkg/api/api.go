@@ -22,8 +22,8 @@ func RegisteHandlersV1(
 	authApi := v1.NewAuthApi(privateKey, publicKey, c)
 	termApi := v1.NewTerminalAPI(terms)
 
-	// test api
-	as.Register(as.NewRoute().Prefix(prefix).Path("/hello").Handler(HelloFluteNAS).AllowAnonymous(true))
+	// check login status api
+	as.Register(as.NewRoute().Prefix(prefix).Path("/hello").Handler(HelloFluteNAS))
 	// =================================== public apis ===================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/login").Handler(authApi.Login).AllowAnonymous(true))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/key").Handler(authApi.GetKey).AllowAnonymous(true))
@@ -59,5 +59,5 @@ func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {
 	if err != nil {
 		w.WriteError(err, nil)
 	}
-	w.Write([]byte(fmt.Sprintf("Hello fluteNAS, %s", param.F1)))
+	w.Write([]byte(fmt.Sprintf("Welcome to fluteNAS, %s", param.F1)))
 }
