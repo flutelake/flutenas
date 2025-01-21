@@ -8,7 +8,6 @@ export class FluteAPI {
 
     async post(api: string, data: any): Promise<any> { // 添加返回类型
         const that = this;
-        console.log(1);
         return new Promise((resolve, reject) => {
             axios.post(api, data).then((resp: AxiosResponse) => { // 指定响应类型
                 // console.log(resp)

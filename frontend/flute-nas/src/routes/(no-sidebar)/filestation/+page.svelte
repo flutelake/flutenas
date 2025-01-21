@@ -12,11 +12,28 @@
 	import { Frame } from 'flowbite-svelte';
 	import toast, { Toaster } from 'svelte-french-toast';
 	import CreateDirModal from '../../../components/files/CreateDirModal.svelte';
+	import Tree from '../../../components/files/Tree.svelte';
+	import { type DirTreeNode } from '$lib/interface';
+  
+	// 左侧 目录导航栏选中的目录
+	let selectedPath = '/';
+	// 左侧 目录导航栏的数据
+	const sampleData: DirTreeNode[] = [{
+		name: '/',
+		path: '/',
+		children: []
+	}]
 
 	let entries :FileEntry[] = []
 	let dirPath :string = '/'
 	let loading : boolean = false
+	
 	$: readDir(dirPath)
+	onMount(() => {
+		dirPath = "/"
+	})
+	// 当左侧目录导航路展开某个目录的时候，右侧文件列表自动定位到该路径
+	$: dirPath = selectedPath
 	function readDir(dirPath :string = '/') {
 		entries = []
 		loading = true
@@ -49,10 +66,7 @@
 	function toggleCreateDirModal() {
 		openCreateDirModal = !openCreateDirModal
 	}
-	onMount(() => {
-		readDir(dirPath)
-	})
-
+	
 	let showUploadingToast = false
 	let selectFiles :FileProgress[] = [];
 	let speed :string = ''
@@ -119,9 +133,19 @@
 	</div>
 	<div class="mt-px space-y-4">
 		<div class="grid grid-cols-1 gap-4 xl:grid-cols-3 2xl:grid-cols-3">
-			<Card horizontal class="items-center justify-between" size="md">
-				<div class="w-full">
-					<p>Directory Explorer</p>
+			<Card class="justify-start" size="md">
+				<div class="items-center justify-between lg:flex">
+					<div class="mb-4 mt-px lg:mb-0">
+						<Heading tag="h3" class="-ml-0.25 mb-2 text-xl font-semibold dark:text-white">
+							Directory Explorer
+						</Heading>
+						<span class="text-base font-normal text-gray-500 dark:text-gray-400">
+							This is a files list of current directory
+						</span>
+					</div>
+				</div>
+				<div class="tree-container lg:flex">
+					<Tree data={sampleData} bind:selectedPath />
 				</div>
 			</Card>
 			<Card size="xl" class="shadow-sm max-w-none col-span-2">
