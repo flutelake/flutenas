@@ -133,12 +133,22 @@
 						{/if}
 					</TableBodyCell>
 					<TableBodyCell class="space-x-2">
-						<Button size="sm" class="gap-2 px-3">
-							<EditOutline size="sm" /> mkfs
-						</Button>
-						<Button color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
-							<TrashBinSolid size="sm" /> setMountPoint
-						</Button>
+						{#if d.IsSystemDisk}
+							<Button  disabled size="sm" class="gap-2 px-3">
+								<EditOutline size="sm" /> mkfs
+							</Button>
+							<Button disabled color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
+								<TrashBinSolid size="sm" /> setMountPoint
+							</Button>
+						{:else}
+							<Button size="sm" class="gap-2 px-3">
+								<EditOutline size="sm" /> mkfs
+							</Button>
+							<Button color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
+								<TrashBinSolid size="sm" /> setMountPoint
+							</Button>
+						{/if}
+						
 					</TableBodyCell>
 				</TableBodyRow>
 			{/each}
