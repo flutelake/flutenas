@@ -9,6 +9,7 @@
 	import { DiskDevice } from '$lib/model';
 	import SetMountPointModal from '../../../components/storage/SetMountPointModal.svelte';
 	export let node : string = 'localhost';
+	import { CurrentHostIP } from '$lib/vars';
 
 	let hidden: boolean = true; // modal control
 	let loading: boolean = false;
@@ -28,14 +29,19 @@
 	};
 
 	let devices :DiskDevice[] = [];
-	function refreshList() {
+	$: refreshList($CurrentHostIP)
+	function refreshList(ip :string) {
 		if (loading) {
 			// 防重复点击
 			return
 		}
+		if (ip == "") {
+			return
+		}
 		loading = true;
+		console.log(ip)
 		const api = new FluteAPI();
-        api.post("/v1/disk/list", {}).then(resp => {
+        api.post("/v1/disk/list", {"HostIP": ip}).then(resp => {
 			devices = DiskDevice.UmarshalArray(resp.data.Devices);
 			loading = false;
         }).catch(err => {
@@ -43,14 +49,14 @@
 			loading = false;
         })
 	}
- 	onMount(() => {
-		refreshList()
-	})
+ 	// onMount(() => {
+	// 	refreshList($CurrentHostIP)
+	// })
 
 	let openSetMountPointModal :boolean = false;
 	let currentDevice :DiskDevice;
 	function toggleSetMountPointModal(d :DiskDevice) {
-		console.log('aa')
+		console.log('open SetMountPoint Dialog')
 		currentDevice = d;
 		openSetMountPointModal = !openSetMountPointModal
 	}
@@ -71,7 +77,7 @@
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div slot="end" class="space-x-2">
 				<!-- on:click={() => toggle("")} -->
-				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList()}} >
+				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList($CurrentHostIP)}} >
 					{#if loading}
 					<RefreshOutline class="w-6 h-6 spin-fast"/>&nbsp; Loading... Please wait
 					{:else}
@@ -203,4 +209,4 @@
 	</div>
 </main>
 
-<SetMountPointModal bind:open={openSetMountPointModal} bind:node={node} bind:disk={currentDevice} on:refesh_list_msg={()=>refreshList()}></SetMountPointModal>
+<SetMountPointModal bind:open={openSetMountPointModal} bind:node={node} bind:disk={currentDevice} on:refesh_list_msg={()=>refreshList($CurrentHostIP)}></SetMountPointModal>

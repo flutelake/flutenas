@@ -12,6 +12,19 @@
         console.log(err)
       })
     });
+
+    // 检查当前浏览器对于session storage的支持情况
+    if (typeof sessionStorage !== 'undefined') {
+      // 支持 sessionStorage
+      try {
+        sessionStorage.setItem('test', 'test');
+        sessionStorage.removeItem('test');
+      } catch (e) {
+        console.error('sessionStorage 不可用', e);
+      }
+    } else {
+      console.error('当前浏览器不支持 sessionStorage');
+    }
 </script>
   
 <div class="p-8">

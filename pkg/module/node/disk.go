@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-func DescribeDisk() ([]model.DiskDevice, error) {
-	exec := NewExec().SetHost("10.0.1.10")
+func DescribeDisk(hostIP string) ([]model.DiskDevice, error) {
+	exec := NewExec().SetHost(hostIP)
 	defer exec.Close()
 
 	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,FSTYPE,PKNAME,MODEL,UUID,PTUUID")

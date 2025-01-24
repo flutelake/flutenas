@@ -2,17 +2,22 @@ package main
 
 import (
 	"context"
+	"errors"
 	flutenasf "flutelake/fluteNAS/frontend/flute-nas"
 	"flutelake/fluteNAS/pkg/api"
+	"flutelake/fluteNAS/pkg/controller"
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/cache"
 	"flutelake/fluteNAS/pkg/module/db"
 	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/module/node"
 	"flutelake/fluteNAS/pkg/server/apiserver"
 	"flutelake/fluteNAS/pkg/server/terminal"
 	"flutelake/fluteNAS/pkg/util"
 	"os"
 	"path/filepath"
+
+	"gorm.io/gorm"
 )
 
 func init() {
@@ -60,12 +65,23 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	terms := terminal.NewWebTerminal(600)
 
+	// init db host table data
+	initSelfHost()
+
 	// register apis
-	api.RegisteHandlersV1(server, privateKey, publicKey, c, terms)
+	api.RegisterHandlersV1(server, privateKey, publicKey, c, terms)
 
 	// start terminal service
 	go terms.Start(ctx.Done())
 	server.HandleFunc("/ws/v1/terminal", terms.WebSocketHandler)
+
+	// start controller manager
+	cron := controller.NewCronJob()
+	err = initController(cron)
+	if err != nil {
+		flog.Fatal(err)
+	}
+	go cron.Start()
 
 	if err := server.Run(ctx); err != nil {
 		cancel()
@@ -96,6 +112,7 @@ func initDB(pStr string) error {
 	// Migrate the table schema
 	err := db.Instance().AutoMigrate(
 		&model.MountPoint{},
+		&model.Host{},
 	// &Network{},
 	// &Host{},
 	// &Operation{},
@@ -105,4 +122,41 @@ func initDB(pStr string) error {
 	}
 
 	return nil
+}
+
+func initController(cron *controller.CronJob) error {
+	// 15s 检查一次挂载点
+	err := cron.AddJob("checkMountPoint", "15 0 0 * * *", controller.NewStorageDeviceController().MountPoint)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// initSelfHost 初始化本机信息
+func initSelfHost() {
+	var localhost model.Host
+	err := db.Instance().First(&localhost, "host_ip = ?", model.LocalHost).Error
+	if err != nil && err != gorm.ErrRecordNotFound {
+		flog.Fatalf("Error query localhost: %v", err)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// 收集本机信息
+		osRelease, version := node.GetOS(model.LocalHost)
+		kernelVersion := node.GetKernelVersion(model.LocalHost)
+		arch := node.GetArch(model.LocalHost)
+		hostname := node.GetHostname(model.LocalHost)
+		localhost = model.Host{
+			HostIP:    model.LocalHost,
+			OS:        osRelease,
+			OSVersion: version,
+			Arch:      arch,
+			Kernel:    kernelVersion,
+			Hostname:  hostname,
+		}
+		if err := db.Instance().Create(&localhost).Error; err != nil {
+			flog.Fatalf("Error creating localhost record: %v", err)
+		}
+	}
 }

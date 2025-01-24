@@ -18,7 +18,7 @@ func ListDiskDevices(w *apiserver.Response, r *apiserver.Request) {
 		return
 	}
 
-	disks, err := node.DescribeDisk()
+	disks, err := node.DescribeDisk(in.HostIP)
 	if err != nil {
 		w.WriteError(err, retcode.StatusError(nil))
 		return
@@ -47,6 +47,11 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 	in := &model.SetMountPointRequest{}
 	if err := r.Unmarshal(in); err != nil {
 		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	host, err := GetHostInfo(w, in.HostIP)
+	if err != nil {
 		return
 	}
 
@@ -86,7 +91,8 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 
 	result := db.Instance().FirstOrCreate(&model.MountPoint{
 		UUID:   in.UUID,
-		Node:   in.Node,
+		HostID: int(host.ID),
+		HostIP: in.HostIP,
 		Path:   p,
 		Device: in.Device,
 	}, "UUID = ?", in.UUID)

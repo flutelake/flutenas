@@ -3,6 +3,7 @@ package model
 import "gorm.io/gorm"
 
 type ListDiskDevicesRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
 }
 
 type ListDiskDevicesResponse struct {
@@ -30,7 +31,8 @@ type DiskDevice struct {
 type MountPoint struct {
 	gorm.Model
 	UUID   string `json:"UUID" gorm:"uniqueIndex"`
-	Node   string `json:"Node"`
+	HostID int    `json:"HostID"`
+	HostIP string `json:"HostIP"`
 	Device string `json:"Device"`
 	Path   string `json:"PATH"`
 }
@@ -44,7 +46,7 @@ type MountedPoint struct {
 }
 
 type SetMountPointRequest struct {
-	Node   string `json:"Node" validate:"required"`
+	HostIP string `json:"HostIP" validate:"required"`
 	Device string `json:"Device" validate:"required"`
 	UUID   string `json:"UUID" validate:"required"`
 	Path   string `json:"Path" validate:"required"`

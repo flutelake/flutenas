@@ -10,6 +10,10 @@
   code: 1001
   message: directory path is empty
 
+- name: ParamInvalid
+  code: 1002
+  message: parameter %s invalid
+
 - name: Error
   code: 9999
   message: request failed

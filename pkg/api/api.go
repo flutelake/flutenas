@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-func RegisteHandlersV1(
+func RegisterHandlersV1(
 	as *apiserver.Apiserver,
 	privateKey *util.LinkedRune,
 	publicKey *util.LinkedRune,
@@ -44,6 +44,9 @@ func RegisteHandlersV1(
 	// disk device
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/list").Handler(v1.ListDiskDevices))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/set-mountpoint").Handler(v1.SetMountPoint))
+
+	// hosts
+	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))
 }
 
 func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {
