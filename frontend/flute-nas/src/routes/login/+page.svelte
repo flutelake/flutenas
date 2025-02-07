@@ -4,6 +4,7 @@
     import JSEncrypt from 'jsencrypt';
     // import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
+    import { Spinner } from 'flowbite-svelte';
 
 
 	async function getPublicKey(): Promise<string> {
@@ -36,11 +37,14 @@
         username: '',
         password: ''
     };
+    // 登陆中的状态标志
+    let loggingInFlag = false;
     
     function handleSubmit(event :any) {
         // console.log(event)
         // 阻止浏览器默认的提交行为
         event.preventDefault();
+        loggingInFlag = true;
        
         getPublicKey().then(publicKey => {
             console.log("key: " + publicKey)
@@ -64,6 +68,7 @@
                 }
             }).catch(err => {
                 console.log("abc", err)
+                loggingInFlag = !loggingInFlag
             })
             
         })
@@ -105,8 +110,13 @@
 		</div>
 
 		<div>
-			<button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+            {#if loggingInFlag}
+            <Spinner class="flex w-full justify-center" />
+            {:else}
+            <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+            {/if}
 		</div>
+       
 		</form>
 	</div>
 </div>
