@@ -7,7 +7,7 @@ import (
 
 // auth
 func filterAuth(c cache.TinyCache, resp *Response, req *Request) int {
-	cookie, err := req.Request.Cookie("sid")
+	cookie, err := req.GetCookie()
 	if err != nil {
 		// Cookie 不存在或读取失败
 		return http.StatusUnauthorized
@@ -16,7 +16,7 @@ func filterAuth(c cache.TinyCache, resp *Response, req *Request) int {
 		return http.StatusInternalServerError
 	}
 
-	userIntf, ok := c.Get("Session:" + cookie.Value)
+	userIntf, ok := c.Get(GenSessionCacheID(cookie.Value))
 	if !ok {
 		// Cookie 有效
 		return http.StatusUnauthorized

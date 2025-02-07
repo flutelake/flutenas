@@ -27,6 +27,7 @@ func RegisterHandlersV1(
 	// =================================== public apis ===================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/login").Handler(authApi.Login).AllowAnonymous(true))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/key").Handler(authApi.GetKey).AllowAnonymous(true))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/logout").Handler(authApi.Logout))
 
 	//==================================== private apis ==================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/terminal").Handler(termApi.CreateTerminal))

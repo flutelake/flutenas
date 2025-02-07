@@ -14,3 +14,7 @@ func NewSession(userInfo interface{}) *Session {
 		UserInfo:  userInfo,
 	}
 }
+
+func GenSessionCacheID(sid string) string {
+	return "Session:" + sid
+}

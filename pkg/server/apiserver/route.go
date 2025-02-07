@@ -81,15 +81,6 @@ handle:
 	h.function(resp, req)
 
 	if resp.cookie != nil {
-		http.SetCookie(w, &http.Cookie{
-			Name:  "sid",
-			Value: resp.cookie.SessionID,
-			Path:  "/",
-			// httpOnly 阻止在浏览器控制台中通过document.cookie获取cookie
-			HttpOnly: true,
-			// Secure:   true,
-			Expires: time.Now().Add(time.Hour * 9),
-		})
 		// save into cache
 		h.cache.SetExpired(fmt.Sprintf("Session:%s", resp.cookie.SessionID), resp.cookie, time.Hour*9)
 	}

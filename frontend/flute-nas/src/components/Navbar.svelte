@@ -117,7 +117,7 @@
 			<Notifications />
 			<AppsMenu />
 			<DarkMode />
-			<UserMenu {...Users[4]} />
+			<UserMenu {...Users[0]} />
 		</div>
 	</NavContainer>
 </Navbar>

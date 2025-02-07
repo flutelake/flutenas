@@ -38,3 +38,11 @@ func (r *Request) Unmarshal(v any) error {
 	}
 	return nil
 }
+
+func (r *Request) GetCookie() (*http.Cookie, error) {
+	cookie, err := r.Request.Cookie("sid")
+	if err != nil {
+		return nil, err
+	}
+	return cookie, nil
+}

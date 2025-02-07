@@ -86,6 +86,15 @@ func (a *AuthApi) Login(w *apiserver.Response, r *apiserver.Request) {
 	w.Write(retcode.StatusOK(out))
 }
 
+func (a *AuthApi) Logout(w *apiserver.Response, r *apiserver.Request) {
+	cookie, _ := r.GetCookie()
+	if cookie != nil {
+		a.cache.Delete(apiserver.GenSessionCacheID(cookie.Value))
+	}
+	w.NullCookie()
+	w.Write(retcode.StatusOK(nil))
+}
+
 func (a *AuthApi) GetKey(w *apiserver.Response, r *apiserver.Request) {
 	key := base64.StdEncoding.EncodeToString([]byte(a.publicKey.String()))
 	out := model.KeyResponse{

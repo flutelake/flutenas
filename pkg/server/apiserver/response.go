@@ -4,6 +4,7 @@ import (
 	"flutelake/fluteNAS/pkg/module/flog"
 	"flutelake/fluteNAS/pkg/util"
 	"net/http"
+	"time"
 )
 
 type Response struct {
@@ -28,4 +29,26 @@ func (r *Response) SetCookie(userInfo any) {
 		SessionID: util.RandStringRunes(32),
 		UserInfo:  userInfo,
 	}
+	http.SetCookie(r.ResponseWriter, &http.Cookie{
+		Name:  "sid",
+		Value: r.cookie.SessionID,
+		Path:  "/",
+		// httpOnly 阻止在浏览器控制台中通过document.cookie获取cookie
+		HttpOnly: true,
+		// Secure:   true,
+		Expires: time.Now().Add(time.Hour * 9),
+	})
+}
+
+func (r *Response) NullCookie() {
+	r.cookie = nil
+	http.SetCookie(r.ResponseWriter, &http.Cookie{
+		Name:  "sid",
+		Value: "",
+		Path:  "/",
+		// httpOnly 阻止在浏览器控制台中通过document.cookie获取cookie
+		HttpOnly: true,
+		// Secure:   true,
+		Expires: time.Now().Add(time.Minute * 1),
+	})
 }
