@@ -21,6 +21,7 @@
 	import { onMount } from 'svelte';
 	import { FluteAPI } from '$lib/api';
 	import { CurrentHostIP, CurrentHostIPKey } from '$lib/vars'
+	import { page } from '$app/stores';
 
 	export let fluid = true;
 	export let drawerHidden = false;
@@ -28,6 +29,7 @@
 	let selectHost :Host;
 	// 节点下拉选择框选中的样式
 	let activeClass = 'text-green-500 dark:text-green-300 hover:text-green-700 dark:hover:text-green-500';
+	$: activeUrl = $page.url.pathname;
 	
 	onMount(() => {
 		const api = new FluteAPI()
@@ -84,12 +86,12 @@
 		</NavBrand>
 		<div class="hidden lg:block lg:ps-3">
 			{#if list}
-				<NavUl class="ml-2" activeUrl="/" activeClass="text-primary-600 dark:text-primary-500">
-					<NavLi href="/">Home</NavLi>
+				<NavUl class="ml-2" activeUrl="{activeUrl}" activeClass="text-primary-600 dark:text-primary-500">
+					<NavLi href="/overview">Overview</NavLi>
 					<NavLi href="/terminal">Terminal</NavLi>
 					<NavLi href="/storage/devices">Storage</NavLi>
 					<NavLi href="/filestation">Files</NavLi>
-					<NavLi href="#top">Settings</NavLi>
+					<!-- <NavLi href="#top">Settings</NavLi> -->
 
 					<NavLi class="cursor-pointer primary">
 						{selectHost?.Hostname}

@@ -31,12 +31,13 @@
 	let devices :DiskDevice[] = [];
 	$: refreshList($CurrentHostIP)
 	function refreshList(ip :string) {
+		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
 			return
 		}
 		if (ip == "") {
-			return
+			ip = "127.0.0.1"
 		}
 		loading = true;
 		console.log(ip)
