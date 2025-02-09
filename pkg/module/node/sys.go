@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"flutelake/fluteNAS/pkg/module/flog"
+	"os"
 	"strings"
 )
 
@@ -74,4 +75,45 @@ func GetHostname(host string) string {
 		flog.Fatalf("Error getting hostname: %v", err)
 	}
 	return strings.TrimSpace(string(output))
+}
+
+func GetLocalHostSshPort() (string, error) {
+	// 打开 sshd 配置文件
+	file, err := os.Open("/etc/ssh/sshd_config")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	// 默认端口是 22
+	port := "22"
+
+	// 逐行读取文件
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		line = strings.TrimSpace(line)
+
+		// 忽略注释和空行
+		if strings.HasPrefix(line, "#") || line == "" {
+			continue
+		}
+
+		// 查找 "Port" 配置项
+		if strings.HasPrefix(line, "Port") {
+			parts := strings.Fields(line)
+			if len(parts) == 2 {
+				// 解析端口号
+				port = parts[1]
+			}
+			break // 找到第一个 Port 配置后退出
+		}
+	}
+
+	// 检查是否有读取错误
+	if err := scanner.Err(); err != nil {
+		return "", err
+	}
+
+	return port, nil
 }

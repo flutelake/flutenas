@@ -1,7 +1,7 @@
 package model
 
 type CreateTerminalRequest struct {
-	Hostname     string `doc:"节点序列号" validate:"required"`
+	HostIP       string `doc:"节点序列号" validate:"required"`
 	FinderPrint  string `doc:"浏览器指纹" validate:"required"`
 	TerminalName string `doc:"节点上面的终端会话名称，创建临时会话时传空"`
 }

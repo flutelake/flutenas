@@ -7,6 +7,7 @@
 	import { FitAddon } from '@xterm/addon-fit';
 	import { Unicode11Addon } from '@xterm/addon-unicode11';
 	import { WebLinksAddon } from '@xterm/addon-web-links';
+    import { CurrentHostIP } from '$lib/vars';
     import "@xterm/xterm/css/xterm.css";
 
 	const path: string = '/terminal';
@@ -30,7 +31,11 @@
         term.writeln('Connecting to server...');
         var api = new FluteAPI()
         console.log(0)
-        api.post("/v1/terminal", {'Hostname': "flute", 'FinderPrint': "unknown", "TerminalName": "01"}).then(resp => {
+        let hostIP = $CurrentHostIP
+        if (hostIP == "") {
+            hostIP = "127.0.0.1"
+        }
+        api.post("/v1/terminal", {'HostIP': hostIP, 'FinderPrint': "unknown", "TerminalName": "01"}).then(resp => {
             // console.log(resp)
             if (resp.code != 0) {
                 term.writeln('Create terminal install failed.')

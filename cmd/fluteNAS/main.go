@@ -147,6 +147,10 @@ func initSelfHost() {
 		kernelVersion := node.GetKernelVersion(model.LocalHost)
 		arch := node.GetArch(model.LocalHost)
 		hostname := node.GetHostname(model.LocalHost)
+		sshPort, err := node.GetLocalHostSshPort()
+		if err != nil {
+			flog.Fatalf("Error get ssh port: %v", err)
+		}
 		localhost = model.Host{
 			HostIP:    model.LocalHost,
 			OS:        osRelease,
@@ -154,6 +158,7 @@ func initSelfHost() {
 			Arch:      arch,
 			Kernel:    kernelVersion,
 			Hostname:  hostname,
+			SSHPort:   sshPort,
 		}
 		if err := db.Instance().Create(&localhost).Error; err != nil {
 			flog.Fatalf("Error creating localhost record: %v", err)

@@ -12,6 +12,7 @@ type Host struct {
 	OSVersion string `json:"OSVersion"`
 	Arch      string `json:"Arch"`
 	Kernel    string `json:"Kernel"`
+	SSHPort   string `json:"SSHPort"`
 }
 
 type ListHostsRequest struct {

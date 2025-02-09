@@ -63,9 +63,9 @@ func newTerminalConn(conn *websocket.Conn, host *Host, uniqueID, name string) *T
 }
 
 func (t *TerminalConn) Run() error {
-	if t.host.isLocalHost() {
-		return t.RunLocal()
-	}
+	// if t.host.isLocalHost() {
+	// 	return t.RunLocal()
+	// }
 	hostport := fmt.Sprintf("%s:%s", t.host.Host, t.host.Port)
 
 	config := &ssh.ClientConfig{
@@ -75,8 +75,7 @@ func (t *TerminalConn) Run() error {
 	if t.host.Password != "" {
 		// 使用密码登录
 		config.Auth = append(config.Auth, ssh.Password(t.host.Password))
-	}
-	if t.host.PrivateKey != "" {
+	} else if t.host.PrivateKey != "" {
 		signers, err := node.ReadPrivateKeys(t.host.PrivateKey)
 		if err != nil {
 			return fmt.Errorf("unable to read private key: %v", err)
@@ -112,7 +111,11 @@ func (t *TerminalConn) Run() error {
 	}
 
 	// 需要sshd_config中配置了AcceptEnv HISTFILE，否则会设置失败
-	if err := session.Setenv("HISTFILE", "/root/.bash_history"); err != nil {
+	historyFile := "/root/.bash_history"
+	if t.host.Username != "root" {
+		historyFile = fmt.Sprintf("/home/%s/.bash_history", t.host.Username)
+	}
+	if err := session.Setenv("HISTFILE", historyFile); err != nil {
 		return fmt.Errorf("set env error: %v", err)
 	}
 	if err := session.Setenv("PS1", `➜ \W `); err != nil {

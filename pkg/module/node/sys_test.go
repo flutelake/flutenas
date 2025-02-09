@@ -25,3 +25,11 @@ func TestGetArch(t *testing.T) {
 	hn := GetArch("127.0.0.1")
 	fmt.Println(hn)
 }
+
+func TestGetSSHPort(t *testing.T) {
+	port, err := GetLocalHostSshPort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(port)
+}

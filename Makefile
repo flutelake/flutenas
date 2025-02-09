@@ -6,7 +6,7 @@ VERSION_FLAG=-X '$(GO_MODULE_NAME)/pkg/version.gitBranch=`git branch --show-curr
 -X '$(GO_MODULE_NAME)/pkg/version.buildDate=`date +'%Y-%m-%dT%H:%M:%SZ'`'
 
 GO_LDFLAGS :=-ldflags "-s $(VERSION_FLAG)"
-GO_ENV := CGO_ENABLED=1 GOOS=linux
+GO_ENV := CGO_ENABLED=0 GOOS=linux
 GO_ENV_AMD64 := GOARCH=amd64
 GO_ENV_ARM64:= GOARCH=arm64
 GO_ENV_SW64:= GOARCH=sw64
@@ -23,6 +23,7 @@ all:
 #################### dev commands ####################
 deploy:
 	rsync -avP dist/x86_64/flute-nas-server root@10.0.1.10:/opt/flute-nas/
+	rsync -avP -e "ssh -p 2030" dist/x86_64/flute-nas-server root@47.243.81.136:/opt/flute-nas/
 	ssh root@10.0.1.10 "systemctl restart flute-nas"
 	
 mpush: all deploy

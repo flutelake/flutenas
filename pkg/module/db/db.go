@@ -3,7 +3,8 @@ package db
 import (
 	"path/filepath"
 
-	"gorm.io/driver/sqlite"
+	// "gorm.io/driver/sqlite"
+	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,7 @@ func Instance() *gorm.DB {
 // InitDB 初始化 DB
 func InitDB(pStr string) (err error) {
 	p := filepath.Join(pStr, "nas.db")
+	// sq
 	db, err = gorm.Open(sqlite.Open(p), &gorm.Config{})
 	if err != nil {
 		return err

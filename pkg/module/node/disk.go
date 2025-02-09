@@ -15,7 +15,7 @@ func DescribeDisk(hostIP string) ([]model.DiskDevice, error) {
 	exec := NewExec().SetHost(hostIP)
 	defer exec.Close()
 
-	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,FSTYPE,PKNAME,MODEL,UUID,PTUUID")
+	output, err := exec.Command("lsblk -npbP -oNAME,SIZE,SERIAL,TYPE,WWN,VENDOR,MOUNTPOINT,HOTPLUG,ROTA,FSTYPE,PKNAME,MODEL,UUID,PARTUUID")
 	if err != nil {
 		return nil, fmt.Errorf("exec error: %s", err)
 	}
@@ -69,7 +69,7 @@ func DescribeDisk(hostIP string) ([]model.DiskDevice, error) {
 				pkname = strs[1]
 			case "UUID":
 				disk.UUID = strs[1]
-			case "PTUUID":
+			case "PARTUUID":
 				disk.PartUUID = strs[1]
 			default:
 				continue

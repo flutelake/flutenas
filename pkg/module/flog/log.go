@@ -21,7 +21,8 @@ var logger *flog
 
 func NewLogger(level int) {
 	logger = &flog{
-		level: level,
+		Logger: log.Logger{},
+		level:  level,
 	}
 }
 
