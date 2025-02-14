@@ -113,6 +113,7 @@ func initDB(pStr string) error {
 	err := db.Instance().AutoMigrate(
 		&model.MountPoint{},
 		&model.Host{},
+		&model.SambaUser{},
 	// &Network{},
 	// &Host{},
 	// &Operation{},
@@ -152,6 +153,7 @@ func initSelfHost() {
 			flog.Fatalf("Error get ssh port: %v", err)
 		}
 		localhost = model.Host{
+			ID:        model.LocalHost,
 			HostIP:    model.LocalHost,
 			OS:        osRelease,
 			OSVersion: version,

@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Host struct {
 	gorm.Model
-	ID        uint   `json:"ID" gorm:"uniqueIndex"`
+	ID        string `json:"ID"` // 正常情况下 ID和IP是相同的内容
 	HostIP    string `json:"HostIP"`
 	Hostname  string `json:"Hostname"`
 	AliasName string `json:"AliasName"`

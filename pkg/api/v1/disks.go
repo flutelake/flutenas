@@ -91,7 +91,7 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 
 	result := db.Instance().FirstOrCreate(&model.MountPoint{
 		UUID:   in.UUID,
-		HostID: int(host.ID),
+		HostID: host.ID,
 		HostIP: in.HostIP,
 		Path:   p,
 		Device: in.Device,

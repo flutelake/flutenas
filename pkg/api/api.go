@@ -46,6 +46,13 @@ func RegisterHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/list").Handler(v1.ListDiskDevices))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/set-mountpoint").Handler(v1.SetMountPoint))
 
+	// samba users
+	s := v1.SambaUserServer{}
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/create").Handler(s.CreateUser))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/list").Handler(s.ListUsers))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/update").Handler(s.UpdateUser))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/delete").Handler(s.DeleteUser))
+
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))
 }

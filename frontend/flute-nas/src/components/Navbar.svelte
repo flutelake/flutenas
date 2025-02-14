@@ -59,7 +59,7 @@
 		if (sh) {
 			selectHost = sh
 			// 更新全局变量
-			CurrentHostIP.set(selectHost.HostIP.toString())
+			CurrentHostIP.set(selectHost.ID.toString())
 			sessionStorage.setItem(CurrentHostIPKey, selectHost.HostIP)
 		}
 		console.log(selectHost)

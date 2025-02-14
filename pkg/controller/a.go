@@ -29,7 +29,7 @@ func (s *StorageDeviceController) MountPoint() {
 	if result.RowsAffected == 0 {
 		return
 	}
-	mpMap := make(map[int][]model.MountPoint)
+	mpMap := make(map[string][]model.MountPoint)
 	for _, mountPoint := range mountPoints {
 		mpMap[mountPoint.HostID] = append(mpMap[mountPoint.HostID], mountPoint)
 	}

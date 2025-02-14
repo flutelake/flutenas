@@ -31,7 +31,7 @@ type DiskDevice struct {
 type MountPoint struct {
 	gorm.Model
 	UUID   string `json:"UUID" gorm:"uniqueIndex"`
-	HostID int    `json:"HostID"`
+	HostID string `json:"HostID"`
 	HostIP string `json:"HostIP"`
 	Device string `json:"Device"`
 	Path   string `json:"PATH"`
