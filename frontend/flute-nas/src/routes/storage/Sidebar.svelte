@@ -56,7 +56,7 @@
 			icon: TableColumnSolid,
 			children: {
 				Users: '/storage/samba/users',
-				Directories: '/storage/samba/dirs'
+				Directories: '/storage/samba/shares'
 			}
 		},
 		{

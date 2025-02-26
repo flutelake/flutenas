@@ -114,6 +114,7 @@ func initDB(pStr string) error {
 		&model.MountPoint{},
 		&model.Host{},
 		&model.SambaUser{},
+		&model.SambaShare{},
 	// &Network{},
 	// &Host{},
 	// &Operation{},

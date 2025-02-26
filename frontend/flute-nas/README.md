@@ -56,6 +56,7 @@ https://taildash.tailwinddashboard.com/file-manager.html
 ## Toast tool
 
 https://svelte-french-toast.vercel.app/
+https://svelte-french-toast.com/
 
 ## Color
 

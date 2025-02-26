@@ -47,11 +47,18 @@ func RegisterHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/set-mountpoint").Handler(v1.SetMountPoint))
 
 	// samba users
-	s := v1.SambaUserServer{}
-	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/create").Handler(s.CreateUser))
-	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/list").Handler(s.ListUsers))
-	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/update").Handler(s.UpdateUser))
-	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/delete").Handler(s.DeleteUser))
+	sambaUserServer := v1.SambaUserServer{}
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/create").Handler(sambaUserServer.CreateUser))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/list").Handler(sambaUserServer.ListUsers))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/update").Handler(sambaUserServer.UpdateUser))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-user/delete").Handler(sambaUserServer.DeleteUser))
+
+	// samba shares
+	sambaShareServer := v1.SambaShareServer{}
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/create").Handler(sambaShareServer.CreateShare))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/list").Handler(sambaShareServer.ListShares))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/update").Handler(sambaShareServer.UpdateShare))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/delete").Handler(sambaShareServer.DeleteShare))
 
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))

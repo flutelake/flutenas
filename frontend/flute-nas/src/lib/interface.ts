@@ -1,7 +1,7 @@
 export interface DirTreeNode {
     name: string;
     path: string;
-children?: DirTreeNode[];
+    children: DirTreeNode[];
 }
 
 export interface Host {
@@ -20,5 +20,23 @@ export interface SambaUser {
     Username: string;
     Password: string;
     Status: string;
-    CreatedAt: Date
+    CreatedAt: Date;
+    Permission: string;
+}
+
+export interface UserPermission {
+    Username: string;
+    Permission: string;
+  }
+
+export interface SambaShare {
+    ID: number;
+    HostIP: string;
+    Name: string;
+    Path: string;
+    Pseudo: string | null;
+    Users: UserPermission[];
+    Status: string;
+    CreatedAt: Date;  // ISO 日期字符串
+    UpdatedAt: Date;  // ISO 日期字符串
 }
