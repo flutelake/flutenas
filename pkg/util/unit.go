@@ -1,6 +1,9 @@
 package util
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var storageUnit = []string{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"}
 
@@ -23,4 +26,8 @@ func StringToBool(str string) bool {
 	default:
 		return false
 	}
+}
+
+func Trim(str string) string {
+	return strings.Trim(str, "\r\n\t")
 }

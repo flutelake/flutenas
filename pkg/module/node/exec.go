@@ -110,6 +110,51 @@ func (x *Exec) Command(cmd string) ([]byte, error) {
 	return stdoutBuf.Bytes(), nil
 }
 
+// WriteFile 写入文件内容到远程主机或本地
+func (x *Exec) WriteFile(path string, content []byte, perm os.FileMode) error {
+	if x.isLocalHost() {
+		return os.WriteFile(path, content, perm)
+	}
+
+	if x.client == nil {
+		if err := x.Connect(); err != nil {
+			return fmt.Errorf("connect error: %v", err)
+		}
+	}
+
+	session, err := x.client.NewSession()
+	if err != nil {
+		return fmt.Errorf("create session error: %v", err)
+	}
+	defer session.Close()
+
+	// 创建目标文件的父目录
+	// if _, err := x.Command(fmt.Sprintf("mkdir -p %s", filepath.Dir(path))); err != nil {
+	// 	return fmt.Errorf("create directory error: %v", err)
+	// }
+
+	// 使用 echo 和重定向来写入文件
+	cmd := fmt.Sprintf("echo '%s' > %s", escapeContent(string(content)), path)
+	if _, err := x.Command(cmd); err != nil {
+		return fmt.Errorf("write file error: %v", err)
+	}
+
+	// 设置文件权限
+	if _, err := x.Command(fmt.Sprintf("chmod %o %s", perm, path)); err != nil {
+		return fmt.Errorf("chmod error: %v", err)
+	}
+
+	return nil
+}
+
+// escapeContent 转义文件内容中的特殊字符
+func escapeContent(content string) string {
+	// 转义单引号和反斜杠
+	content = strings.ReplaceAll(content, `\`, `\\`)
+	content = strings.ReplaceAll(content, `'`, `'\''`)
+	return content
+}
+
 func (x *Exec) localCommand(cmd string) ([]byte, error) {
 	command := exec.Command("sh", "-c", cmd)
 	command.Env = append(os.Environ(), "LANG=en_US.UTF-8")

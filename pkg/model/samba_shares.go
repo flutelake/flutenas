@@ -33,6 +33,12 @@ type UserPermission struct {
 	Permission string `json:"Permission" validate:"required"`
 }
 
+const (
+	SambaACL_ReadyOnly  = "r"
+	SambaACL_ReadWrite  = "rw"
+	SambaUser_Anonymous = "everyone"
+)
+
 func (s *SambaShare) TableName() string {
 	return "samba_shares"
 }

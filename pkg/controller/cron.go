@@ -22,7 +22,7 @@ type CronJob struct {
 
 func NewCronJob() *CronJob {
 	return &CronJob{
-		cron: cron.New(cron.WithSeconds()),
+		cron: cron.New(),
 		jobs: make(map[string]cron.EntryID),
 	}
 }
