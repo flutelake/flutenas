@@ -81,18 +81,29 @@ func (s *Apiserver) Run(ctx context.Context) (err error) {
 		s.serveMux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			clientIP := util.GetClientIP(r)
 			defer flog.Infof("WebServer [%s %s] [client: %s]", r.Method, r.RequestURI, clientIP.String())
+
+			// 如果请求的是根路径，直接返回index.html
+			if r.URL.Path == "/" {
+				w.Header().Set("Content-Type", "text/html")
+				w.Write(index)
+				return
+			}
+
 			// r.RequestURI 自带'/'前缀
 			absolute := "build" + r.RequestURI
 			ext := filepath.Ext(absolute)
 			bs, err := s.frontendFS.Open(absolute)
 			if err != nil {
 				if errors.Is(err, fs.ErrNotExist) {
+					w.WriteHeader(http.StatusNotFound)
+					w.Header().Set("Content-Type", "text/html")
 					w.Write(index)
 					return
 				}
 
 				flog.Errorf("WebServer [%s %s], [error] %s", r.Method, r.RequestURI, err.Error())
 			}
+			defer bs.Close()
 			contentType := mime.TypeByExtension(ext)
 			w.Header().Set("Content-Type", contentType)
 			io.Copy(w, bs)

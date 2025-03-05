@@ -49,7 +49,7 @@ type SetMountPointRequest struct {
 	HostIP string `json:"HostIP" validate:"required"`
 	Device string `json:"Device" validate:"required"`
 	UUID   string `json:"UUID" validate:"required"`
-	Path   string `json:"Path" validate:"required"`
+	Path   string `json:"Path"`
 }
 
 type SetMountPointResponse struct {

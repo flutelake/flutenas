@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/db"
+	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/module/node"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
+	"flutelake/fluteNAS/pkg/util"
 	"strings"
 	"time"
 )
@@ -65,6 +68,16 @@ type DeleteSambaShareRequest struct {
 // DeleteSambaShareResponse defines the response payload for deleting a Samba share
 type DeleteSambaShareResponse struct {
 	ID uint `json:"ID"`
+}
+
+type SambaStatusRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+}
+
+// DeleteSambaShareResponse defines the response payload for deleting a Samba share
+type SambaStatusResponse struct {
+	Installed bool `json:"Installed"`
+	Actived   bool `json:"Actived"`
 }
 
 func (s *SambaShareServer) CreateShare(w *apiserver.Response, r *apiserver.Request) {
@@ -189,5 +202,74 @@ func (s *SambaShareServer) DeleteShare(w *apiserver.Response, r *apiserver.Reque
 	out := DeleteSambaShareResponse{
 		ID: in.ID,
 	}
+	w.Write(retcode.StatusOK(out))
+}
+
+func (s *SambaShareServer) SambaStatus(w *apiserver.Response, r *apiserver.Request) {
+	in := &SambaStatusRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	cmd := node.NewExec().SetHost(in.HostIP)
+
+	checkInstalled := `
+        if command -v smbd >/dev/null 2>&1; then
+            echo "installed"
+        else
+            echo "not_installed"
+        fi`
+
+	resBs, err := cmd.Command(checkInstalled)
+	if err != nil {
+		flog.Errorf("check samba is installed on host: %s, error: %v, stdout: %s", in.HostIP, err, string(resBs))
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	if util.Trim(string(resBs)) == "not_installed" {
+		installScript := `
+            if command -v apt-get >/dev/null 2>&1; then
+                # Debian/Ubuntu
+                apt-get update && apt-get install -y samba
+				systemctl enable smb
+				systemctl start smb
+            elif command -v yum >/dev/null 2>&1; then
+                # CentOS/RHEL
+                yum -y install samba samba-common
+				systemctl enable smb
+				systemctl start smb
+            elif command -v dnf >/dev/null 2>&1; then
+                # Fedora
+                dnf -y install samba
+				systemctl enable smb
+				systemctl start smb
+            else
+                echo "Unsupported operating system"
+                exit 1
+            fi`
+
+		resBs, err = cmd.Command(installScript)
+		if err != nil {
+			flog.Errorf("try to install samba service on host: %s, error: %v, stdout: %s", in.HostIP, err, string(resBs))
+			w.WriteError(err, retcode.StatusError(nil))
+			return
+		}
+	}
+	// 检查 samba 服务状态
+	checkActive := `systemctl is-active smbd`
+	activeResult, err := cmd.Command(checkActive)
+	if err != nil {
+		flog.Errorf("get samba service status on host: %s, error: %v, stdout: %s", in.HostIP, err, string(resBs))
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	out := SambaStatusResponse{
+		Installed: util.Trim(string(resBs)) == "installed",
+		Actived:   util.Trim(string(activeResult)) == "active",
+	}
+
 	w.Write(retcode.StatusOK(out))
 }

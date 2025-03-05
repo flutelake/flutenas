@@ -59,6 +59,7 @@ func RegisterHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/list").Handler(sambaShareServer.ListShares))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/update").Handler(sambaShareServer.UpdateShare))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/delete").Handler(sambaShareServer.DeleteShare))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/status").Handler(sambaShareServer.SambaStatus))
 
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))

@@ -99,8 +99,8 @@ func DescribeDisk(hostIP string) ([]model.DiskDevice, error) {
 	return disks, nil
 }
 
-func DescribeMountedPoint() ([]model.MountedPoint, error) {
-	exec := NewExec().SetHost("10.0.1.10")
+func DescribeMountedPoint(hostIP string) ([]model.MountedPoint, error) {
+	exec := NewExec().SetHost(hostIP)
 	defer exec.Close()
 
 	output, err := exec.Command("mount -l")

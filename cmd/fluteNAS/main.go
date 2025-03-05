@@ -128,13 +128,13 @@ func initDB(pStr string) error {
 
 func initController(cron *controller.CronJob) error {
 	// 15s 检查一次挂载点
-	// err := cron.AddJob("checkMountPoint", "15 0 0 * * *", controller.NewStorageDeviceController().MountPoint)
-	// if err != nil {
-	// 	return err
-	// }
+	err := cron.AddJob("checkMountPoint", "@every 15s", controller.NewStorageDeviceController().MountPoint)
+	if err != nil {
+		return err
+	}
 
 	// 15s 检查一次samba user
-	err := cron.AddJob("sambaUser", "@every 15s", controller.NewSambaUsereController().Do)
+	err = cron.AddJob("sambaUser", "@every 15s", controller.NewSambaUsereController().Do)
 	if err != nil {
 		return err
 	}

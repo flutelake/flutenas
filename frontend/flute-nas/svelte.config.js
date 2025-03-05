@@ -20,6 +20,10 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
+		paths: {
+			base: "", // 服务部署的url前缀，比如app部署在/nas路径，这个需要配置”/nas“
+			relative: false
+		}
 	}
 };
 

@@ -15,7 +15,7 @@ func TestDescribeDisk(t *testing.T) {
 }
 
 func TestDescribeMountedPoint(t *testing.T) {
-	got, err := DescribeMountedPoint()
+	got, err := DescribeMountedPoint("127.0.0.1")
 	if err != nil {
 		t.Errorf("DescribeMountedPoint() error = %v", err)
 		return

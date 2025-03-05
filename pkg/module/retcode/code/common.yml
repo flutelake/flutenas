@@ -14,6 +14,10 @@
   code: 1002
   message: parameter %s invalid
 
+- name: UmountDiskFailed
+  code: 2000
+  message: umount disk on path %s failed, maybe you can umount manually in terminal first.
+
 - name: Error
   code: 9999
   message: request failed

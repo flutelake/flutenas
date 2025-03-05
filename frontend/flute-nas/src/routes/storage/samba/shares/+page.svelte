@@ -60,14 +60,14 @@
 		createShareModalFlag = false
 	}
 
-	let updateUserModalFlag :boolean = false
-	// let selectUser :SambaUser
-	// function onClickUpdateUser(idx :number) {
-	// 	console.log('open Update Samba User Dialog')
-	// 	updateUserModalFlag = true
-	// 	selectUser = users[idx]
-
-	// }
+	let smbStatus :boolean = false
+	function checkSmbStatus() {
+		const api = new FluteAPI();
+		api.post("/v1/samba-share/status", {"HostIP": $CurrentHostIP ? $CurrentHostIP : "127.0.0.1"}).then(resp => {
+			smbStatus = resp.data.Actived;
+        }).catch(err => {
+        })
+	}
 
 	let deleteUserModalFlag :boolean = false
 	function onClickDeleteShare(idx :number) {
@@ -95,6 +95,10 @@
 		}
 	}
 	let selectedPath = ""
+
+	onMount(() => {
+		checkSmbStatus()
+	})
 </script>
 
 <MetaTag {path} {description} {title} {subtitle} />
@@ -109,12 +113,24 @@
 		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
 			Samba Shares
 		</Heading>
+		<!-- <p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
+			Active
+			</p> -->
 		
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div class="items-center justify-between gap-3 space-y-4 sm:flex sm:space-y-0">
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
 					<GradientButton color="pinkToOrange" on:click={onClickCreateShare} >Create</GradientButton>
+				</div>
+				<div class="flex items-center space-x-4">
+					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
+					<!-- <GradientButton color="pinkToOrange" >smb status: active</GradientButton> -->
+					{#if smbStatus }
+					<p>Samba Status is Actived</p>
+					{:else}
+					<p>Samba Status not Active</p>
+					{/if}
 				</div>
 			</div>
 			<div slot="end" class="space-x-2">
@@ -133,7 +149,7 @@
 	<Table>
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
 			<TableHeadCell class="w-4 p-4"><Checkbox /></TableHeadCell>
-			{#each ['Index', 'ShareName', 'Path', 'Pseudo Path', 'Users', 'CreateAt', 'Action'] as title}
+			{#each ['Index', 'ShareName', 'Path', 'Pseudo Path', 'Status', 'Users', 'CreateAt', 'Action'] as title}
 				<TableHeadCell class="ps-4 font-normal">{title}</TableHeadCell>
 			{/each}
 		</TableHead>
@@ -145,6 +161,7 @@
 					<TableBodyCell class="p-4">{s.Name}</TableBodyCell>
 					<TableBodyCell class="p-4">{s.Path}</TableBodyCell>
 					<TableBodyCell class="p-4">{s.Pseudo}</TableBodyCell>
+					<TableBodyCell class="p-4">{s.Status}</TableBodyCell>
 					<TableBodyCell class="p-4">{formatUserPermission(s.Users)}</TableBodyCell>
 					<TableBodyCell class="p-4">{s.CreatedAt}</TableBodyCell>
 					<TableBodyCell class="p-4">
@@ -160,8 +177,8 @@
 			{/each}
 		</TableBody>
 	</Table>
-
 	<Hr />
+	<!-- <Hr /> -->
 	<div class="p-4">
 		<Heading
 		tag="h1"

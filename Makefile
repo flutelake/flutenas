@@ -23,10 +23,14 @@ all:
 #################### dev commands ####################
 deploy:
 	rsync -avP dist/x86_64/flute-nas-server root@10.0.1.10:/opt/flute-nas/
-	rsync -avP -e "ssh -p 2030" dist/x86_64/flute-nas-server root@47.243.81.136:/opt/flute-nas/
 	ssh root@10.0.1.10 "systemctl restart flute-nas"
 	
 mpush: all deploy
+
+demopush:
+	rsync -avP -e "ssh -p 2030" dist/x86_64/flute-nas-server root@47.243.81.136:/opt/flute-nas/
+	ssh root@47.243.81.136 -p 2030 "systemctl restart flute-nas"
+
 #################### dev commands end ####################
 
 frontend:

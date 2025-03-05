@@ -63,7 +63,7 @@
 			name: 'NFS',
 			icon: RectangleListSolid,
 			children: {
-				Users: '/storage/nfs/users',
+				// Users: '/storage/nfs/users',
 				Directories: '/storage/nfs/dirs'
 			}
 		},

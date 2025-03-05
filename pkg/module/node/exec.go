@@ -2,6 +2,8 @@ package node
 
 import (
 	"bytes"
+	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/util"
 	"fmt"
 	"os"
 	"os/exec"
@@ -79,6 +81,7 @@ func (x *Exec) Close() {
 }
 
 func (x *Exec) Command(cmd string) ([]byte, error) {
+	cmd = cmd + " 2>&1"
 	if x.isLocalHost() {
 		return x.localCommand(cmd)
 	}
@@ -144,6 +147,38 @@ func (x *Exec) WriteFile(path string, content []byte, perm os.FileMode) error {
 		return fmt.Errorf("chmod error: %v", err)
 	}
 
+	return nil
+}
+
+func (x *Exec) RemoveDir(p string) error {
+	isEmpty, err := x.Command(fmt.Sprintf("ls -A %s | wc -l", p))
+	if err != nil {
+		return fmt.Errorf("检查目录 %s 是否为空失败: %v", p, err)
+	} else {
+		// 如果目录为空（输出为0），则删除该目录
+		if util.Trim(string(isEmpty)) == "0" {
+			_, err := x.Command(fmt.Sprintf("rmdir %s", p))
+			if err != nil {
+				return fmt.Errorf("删除空目录 %s 失败: %v", p, err)
+			} else {
+				flog.Infof("成功删除空目录: %s", p)
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
+// 解除挂载，解除挂载成功后，判断挂载点路径是否为空，如果为空则删除该路径目录(清理目录报错不返回错误)
+func (x *Exec) UmountDir(p string) error {
+	bs, err := x.Command(fmt.Sprintf("umount -f %s", p))
+	if err != nil {
+		// 解挂失败的问题，暂时不返回错误，等控制器来解挂
+		return fmt.Errorf("umount -f %s failed: %v, stdout: %s", p, err, string(bs))
+	}
+	if err = x.RemoveDir(p); err != nil {
+		flog.Errorf("remove empty mount point dir error: %v", err)
+	}
 	return nil
 }
 

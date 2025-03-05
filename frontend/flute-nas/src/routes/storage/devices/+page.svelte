@@ -121,7 +121,7 @@
 							<div class="text-base font-semibold text-gray-900 dark:text-white">
 								{d.MountPoint}
 							</div>
-							{#if d.SpecMountPoint }
+							{#if d.SpecMountPoint && d.SpecMountPoint != d.MountPoint }
 							<!-- todo Pending 可以加一个问号的小图标解释其含义 -->
 							<div class="text-sm font-normal text-gray-500 dark:text-gray-400">
 								Pending: { d.SpecMountPoint }
@@ -141,18 +141,18 @@
 					</TableBodyCell>
 					<TableBodyCell class="space-x-2">
 						{#if d.IsSystemDisk}
-							<Button  disabled size="sm" class="gap-2 px-3">
+							<!-- <Button  disabled size="sm" class="gap-2 px-3">
 								<EditOutline size="sm" /> mkfs
-							</Button>
+							</Button> -->
 							<Button disabled color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
-								<TrashBinSolid size="sm" /> setMountPoint
+								<EditOutline size="sm" /> setMountPoint
 							</Button>
 						{:else}
-							<Button size="sm" class="gap-2 px-3">
+							<!-- <Button size="sm" class="gap-2 px-3">
 								<EditOutline size="sm" /> mkfs
-							</Button>
+							</Button> -->
 							<Button color="red" size="sm" class="gap-2 px-3" on:click={() => toggleSetMountPointModal(d)}>
-								<TrashBinSolid size="sm" /> setMountPoint
+								<EditOutline size="sm" /> setMountPoint
 							</Button>
 						{/if}
 						
