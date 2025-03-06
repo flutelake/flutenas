@@ -2,7 +2,6 @@ package v1
 
 import (
 	"flutelake/fluteNAS/pkg/model"
-	"flutelake/fluteNAS/pkg/module/flog"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
 	"flutelake/fluteNAS/pkg/server/terminal"
@@ -32,7 +31,6 @@ func (a *TerminalAPI) CreateTerminal(w *apiserver.Response, r *apiserver.Request
 		w.WriteError(fmt.Errorf("format session error"), retcode.StatusError)
 		return
 	}
-	flog.Infof("username: %s, password: %s", userinfo.Username, userinfo.Password.String())
 	// if host_ip not eq localhost, get host ip from db
 	hostInfo, err := GetHostInfo(w, in.HostIP)
 	if err != nil {

@@ -21,15 +21,19 @@ func RegisterHandlersV1(
 
 	authApi := v1.NewAuthApi(privateKey, publicKey, c)
 	termApi := v1.NewTerminalAPI(terms)
+	wallpaperApi := v1.NewWallpapaerAPI(c)
 
 	// check login status api
 	as.Register(as.NewRoute().Prefix(prefix).Path("/hello").Handler(HelloFluteNAS))
 	// =================================== public apis ===================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/login").Handler(authApi.Login).AllowAnonymous(true))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/key").Handler(authApi.GetKey).AllowAnonymous(true))
-	as.Register(as.NewRoute().Prefix(prefix).Path("/logout").Handler(authApi.Logout))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/wallpaper").Handler(wallpaperApi.GetWallpaper).AllowAnonymous(true))
 
 	//==================================== private apis ==================================== //
+	as.Register(as.NewRoute().Prefix(prefix).Path("/logout").Handler(authApi.Logout))
+
+	// web terminal
 	as.Register(as.NewRoute().Prefix(prefix).Path("/terminal").Handler(termApi.CreateTerminal))
 
 	// file download server

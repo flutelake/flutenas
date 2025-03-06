@@ -2,10 +2,23 @@
     import MetaTag from '../../components/MetaTag.svelte';
     import axios from 'axios'
     import JSEncrypt from 'jsencrypt';
-    // import { onMount } from 'svelte';
+    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { Spinner, Alert } from 'flowbite-svelte';
 
+    let backgroundImage = '';
+
+    onMount(async () => {
+        try {
+            const response = await axios.get('/v1/wallpaper');
+            if (response.data.code === 0 && response.data.data) {
+                backgroundImage = response.data.data.url;
+                console.log('壁纸信息:', response.data.data);
+            }
+        } catch (error) {
+            console.error('获取背景图片失败:', error);
+        }
+    });
 
 	async function getPublicKey(): Promise<string> {
         try {
@@ -83,47 +96,49 @@
 
 <MetaTag {path} {description} title={metaTitle} {subtitle} />
 
-<div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
-	<div class="sm:mx-auto sm:w-full sm:max-w-sm">
-		<!-- <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company"/> -->
-		<h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in FluteNAS</h2>
-	</div>
-
-	<div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-		<form class="space-y-6" action="#" method="POST" on:submit={handleSubmit}>
-		<div>
-			<div class="flex items-center justify-between">
-			<label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
-			</div>
-			<div class="mt-2">
-			<input id="username" name="username" type="text" bind:value={formData.username} autoComplete="username" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
-			</div>
-		</div>
-
-		<div>
-			<div class="flex items-center justify-between">
-			<label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
-			</div>
-			<div class="mt-2">
-			<input id="password" name="password" type="password" bind:value={formData.password} autoComplete="password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
-			</div>
-		</div>
-
-        <div>
-            <Alert color="green">
-                <span class="font-medium">Demo Account</span>
-                <br>Username: demo <br> Password: brgBKX9230q7GHXwN20D
-            </Alert>
+<div class="min-h-screen bg-cover bg-center bg-no-repeat" style="background-image: url('{backgroundImage}')">
+    <div class="min-h-screen bg-opacity-50 flex flex-col justify-center px-6 pb-32 pt-0 lg:px-8">
+        <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+            <!-- <img class="mx-auto h-10 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="Your Company"/> -->
+            <h2 class="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-white">Sign in to FluteNAS</h2>
         </div>
 
-		<div>
-            {#if loggingInFlag}
-            <Spinner class="flex w-full justify-center" />
-            {:else}
-            <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
-            {/if}
-		</div>
-       
-		</form>
-	</div>
+        <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <form class="space-y-6 bg-white/70 p-8 rounded-lg shadow-xl" action="#" method="POST" on:submit={handleSubmit}>
+            <div>
+                <div class="flex items-center justify-between">
+                <label for="username" class="block text-sm font-medium leading-6 text-gray-900">Username</label>
+                </div>
+                <div class="mt-2">
+                <input id="username" name="username" type="text" bind:value={formData.username} autoComplete="username" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between">
+                <label for="password" class="block text-sm font-medium leading-6 text-gray-900">Password</label>
+                </div>
+                <div class="mt-2">
+                <input id="password" name="password" type="password" bind:value={formData.password} autoComplete="password" required class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" />
+                </div>
+            </div>
+
+            <div>
+                <Alert color="green">
+                    <span class="font-medium">Demo Account</span>
+                    <br>Username: demo <br> Password: brgBKX9230q7GHXwN20D
+                </Alert>
+            </div>
+
+            <div>
+                {#if loggingInFlag}
+                <Spinner class="flex w-full justify-center" />
+                {:else}
+                <button type="submit" class="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Sign in</button>
+                {/if}
+            </div>
+           
+            </form>
+        </div>
+    </div>
 </div>
