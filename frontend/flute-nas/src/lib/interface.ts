@@ -40,3 +40,21 @@ export interface SambaShare {
     CreatedAt: Date;  // ISO 日期字符串
     UpdatedAt: Date;  // ISO 日期字符串
 }
+
+export interface NFSExport {
+    ID: number;
+    HostIP: string;
+    Name: string;
+    Path: string;
+    Pseudo: string;
+    Status: string;
+    Acls: NFSExportAcl[];
+    Protocols: string;
+    CreatedAt: Date;  // ISO 日期字符串
+    UpdatedAt: Date;  // ISO 日期字符串
+}
+
+export interface NFSExportAcl {
+    IPRange: string;
+    Permission: string;
+}

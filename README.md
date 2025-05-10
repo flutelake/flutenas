@@ -1,16 +1,17 @@
 # FluteNAS
 
-## Probrems
+a light weight NAS manage web console.
 
-因为使用sqlite，所以在新系统部署时，需要先安装sqlite依赖(后期可以考虑使用About
-[pure-Go SQLite driver for Go (SQLite embedded)]( https://github.com/glebarez/go-sqlite))
+## Development
 
-Redhat系列
+```console
+# git clone https://github.com/flutelake/flutenas.git
+
+# cd flutenas
+
+# make all
+
+# ./dist/x86_64/flute-nas-server
 ```
-yum install sqlite
-```
 
-demo服务
-
-demo
-brgBKX9230q7GHXwN20D
+Open the browser and visit `http://127.0.0.1:8088`. The login credentials are the Linux system's username and password. You can log in directly using the root account.

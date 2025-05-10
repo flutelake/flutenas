@@ -65,6 +65,14 @@ func RegisterHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/delete").Handler(sambaShareServer.DeleteShare))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/samba-share/status").Handler(sambaShareServer.SambaStatus))
 
+	// nfs shares
+	nfsShareServer := v1.NFSShareServer{}
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/create").Handler(nfsShareServer.CreateNFSExport))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/list").Handler(nfsShareServer.ListNFSExports))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/update").Handler(nfsShareServer.UpdateNFSExport))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/delete").Handler(nfsShareServer.DeleteNFSExport))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/status").Handler(nfsShareServer.NFSStatus))
+
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))
 }

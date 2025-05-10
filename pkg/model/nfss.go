@@ -8,36 +8,17 @@ type OpenNFSServerRequest struct {
 
 type NFSExport struct {
 	gorm.Model
-	Id           uint   `json:"UUID" gorm:"uniqueIndex,primaryKey"`
-	Name         string `json:"Name"`
-	Path         string `json:"Path"`
-	PseudoPath   string `json:"PseudoPath" gorm:"unique"`
-	IPWhiteRange string `json:"IPWhiteRange"`
+	ID        uint   `json:"ID" gorm:"uniqueIndex,primaryKey"`
+	HostIP    string `json:"HostIP"`
+	Name      string `json:"Name"`
+	Path      string `json:"Path"`
+	Pseudo    string `json:"Pseudo" gorm:"unique"`
+	Acls      string `json:"Acls"`
+	Protocols string `json:"Protocols"`
+	Status    string `json:"Status" gorm:"default:init"`
 }
 
-type OpenNFSServerRequestResponse struct {
-}
-
-type CreateNFSExportRequest struct {
-}
-
-type CreateNFSExportRequestResponse struct {
-}
-
-type DeleteNFSExportRequest struct {
-}
-
-type DeleteNFSExportRequestResponse struct {
-}
-
-type UpdateNFSExportRequest struct {
-}
-
-type UpdateNFSExportRequestResponse struct {
-}
-
-type ListNFSExportsRequest struct {
-}
-
-type ListNFSExportsResponse struct {
+type NFSAcl struct {
+	IPRange    string `json:"IPRange"`
+	Permission string `json:"Permission"`
 }

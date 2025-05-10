@@ -193,6 +193,7 @@ func (s *SambaShareServer) DeleteShare(w *apiserver.Response, r *apiserver.Reque
 		return
 	}
 
+	// todo 删除需要通过状态来删除
 	// Use actual DB instance
 	if err := db.Instance().Delete(&share).Error; err != nil {
 		w.WriteError(err, retcode.StatusError(nil))
