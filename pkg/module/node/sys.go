@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"flutelake/fluteNAS/pkg/module/flog"
 	"os"
+	"os/user"
+	"strconv"
 	"strings"
 )
 
@@ -116,4 +118,57 @@ func GetLocalHostSshPort() (string, error) {
 	}
 
 	return port, nil
+}
+
+const OS_USER_FLUTE = "flute"
+
+func GetFluteUIDGID() (uid, gid int) {
+	u, err := user.Lookup(OS_USER_FLUTE)
+	if err != nil {
+		return 0, 0
+	}
+	uid, _ = strconv.Atoi(u.Uid)
+
+	g, err := user.LookupGroup(OS_USER_FLUTE)
+	if err != nil {
+		return 0, 0
+	}
+	gid, _ = strconv.Atoi(g.Gid)
+
+	return uid, gid
+}
+
+func CreateFluteUserAndGroup() error {
+	// 检查 flute 用户是否存在
+	_, uErr := user.Lookup(OS_USER_FLUTE)
+	_, gErr := user.LookupGroup(OS_USER_FLUTE)
+
+	if gErr != nil {
+		// 创建 flute 组
+		if _, err := NewExec().Command("groupadd " + OS_USER_FLUTE); err != nil {
+			return err
+		}
+	}
+	if uErr != nil {
+		// 创建 flute 用户并加入 flute 组
+		if _, err := NewExec().Command("useradd -g " + OS_USER_FLUTE + " " + OS_USER_FLUTE); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// 修改文件的所属权限为644，用户和组都为flute
+func Belong2Flute(p string) error {
+	uid, gid := GetFluteUIDGID()
+	if uid == 0 && gid == 0 {
+		return nil
+	}
+	if err := os.Chown(p, uid, gid); err != nil {
+		return err
+	}
+	if err := os.Chmod(p, 0o644); err != nil {
+		return err
+	}
+	return nil
 }

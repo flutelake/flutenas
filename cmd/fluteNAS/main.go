@@ -68,6 +68,9 @@ func main() {
 	// init db host table data
 	initSelfHost()
 
+	// create flute user and group
+	node.CreateFluteUserAndGroup()
+
 	// register apis
 	api.RegisterHandlersV1(server, privateKey, publicKey, c, terms)
 

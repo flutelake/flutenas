@@ -6,6 +6,7 @@ import (
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/cache"
 	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/module/node"
 	"flutelake/fluteNAS/pkg/module/retcode"
 	"flutelake/fluteNAS/pkg/server/apiserver"
 	"flutelake/fluteNAS/pkg/util"
@@ -110,6 +111,14 @@ func CreateDir(w *apiserver.Response, r *apiserver.Request) {
 		return
 	}
 
+	uid, gid := node.GetFluteUIDGID()
+	err = os.Chown(p, uid, gid)
+	if err != nil {
+		defer os.Remove(p)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
 	out := model.CreateDirResponse{}
 	w.Write(retcode.StatusOK(out))
 }
@@ -179,7 +188,8 @@ func UploadFiles(w *apiserver.Response, r *apiserver.Request) {
 				w.WriteError(fmt.Errorf("multipart name is empty"), retcode.StatusError(nil))
 				return
 			}
-			file, err = os.Create(filepath.Join(path, name))
+			p := filepath.Join(path, name)
+			file, err = os.Create(p)
 			if err != nil {
 				w.WriteError(err, retcode.StatusError(nil))
 				return
@@ -187,6 +197,7 @@ func UploadFiles(w *apiserver.Response, r *apiserver.Request) {
 			defer file.Close()
 			io.Copy(file, part)
 			filenames = append(filenames, part.FileName())
+			node.Belong2Flute(p)
 		}
 	}
 
