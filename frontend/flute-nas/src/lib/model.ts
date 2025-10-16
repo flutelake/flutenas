@@ -18,6 +18,8 @@ export class FileProgress {
     file: File;
     progress: number;
     progress2: number;
+    xhr?: XMLHttpRequest;
+    completedAt?: number;
 
     constructor(file : File, progress : number) {
         this.file = file
@@ -36,6 +38,9 @@ export class FileProgress {
             } else {
                 this.progress2 = this.progress + 20 
             }
+        }
+        if (pg >= 100) {
+            this.completedAt = Date.now();
         }
     } 
 }

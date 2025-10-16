@@ -48,7 +48,9 @@
     }
 
     function startUpload(e :any) {
-        dispatch("selected_message", selectFiles)
+        let filesCopy = selectFiles.slice(); // 创建一个新的数组副本
+        selectFiles = []; // 清空 selectFiles 数组
+        dispatch("selected_message", filesCopy)
     }
   </script>
   

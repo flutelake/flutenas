@@ -14,6 +14,7 @@
 	import CreateDirModal from '../../../components/files/CreateDirModal.svelte';
 	import Tree from '../../../components/files/Tree.svelte';
 	import { type DirTreeNode } from '$lib/interface';
+	import { fade } from 'svelte/transition';
   
 	// 左侧 目录导航栏选中的目录
 	let selectedPath = '/';
@@ -70,6 +71,20 @@
 	let showUploadingToast = false
 	let selectFiles :FileProgress[] = [];
 	let speed :string = ''
+
+	// 当上传进度展示Toast关闭时 中断所有的上传任务
+	$: if (!showUploadingToast) {
+		// Toast关闭时，终止所有上传任务
+		if (selectFiles && selectFiles.length > 0) {
+			selectFiles.forEach(f => {
+				if (f.xhr) {
+					f.xhr.abort();
+				}
+			});
+			selectFiles = [];
+		}
+	}
+
 	function handleUploading(e :any) {
 		// console.log("father receive:");
 		// console.log(e.detail);
@@ -77,12 +92,12 @@
 			console.log("show uploading toast")
 			const api = new FluteAPI()
 			showUploadingToast = true
-	
+			let uploadDirPath = dirPath
 			setTimeout(async function(){
 				selectFiles = e.detail
 				for (let i = 0; i < selectFiles.length; i++) {
 					await api.uploadFile(
-						dirPath,
+						uploadDirPath,
 						selectFiles[i], 
 						// (progressEvent :any) => { // 监听上传进度
 						// 	const { loaded, total } = progressEvent;
@@ -104,8 +119,10 @@
 							console.log(`上传进度: ${selectFiles[i].progress}% | 网速: ${speed} KB/s`); // 输出进度和网速
 						}
                 	)
-					// 每上传一个文件 刷新一下文件列表
-					readDir(dirPath)
+					// 每上传一个文件 刷新一下文件列表 前提是没有切换目录
+					if (dirPath == uploadDirPath) {
+						readDir(dirPath)
+					}
 				}
 				showUploadingToast = false
 				
@@ -189,10 +206,13 @@
 	<Frame tag='ul' rounded border class="divide-y divide-gray-200 dark:divide-gray-600">
 		{#if selectFiles}
             {#each selectFiles as item, index}
+			{#if item.progress < 100 || (item.completedAt && Date.now() - item.completedAt < 2000)}
             <li
             class="py-2 px-4 w-full text-sm font-medium list-none first:rounded-t-lg last:rounded-b-lg truncate"
             style="background-image: linear-gradient(to right, #6ee7b7 0%, #6ee7b7 {item.progress}%, #fff {item.progress2}%, #fff 100%);"
+            transition:fade={{ delay: 1000, duration: 500 }}
             >{item.file.name}</li>
+			{/if}
             {/each}
         {/if}
 	</Frame>

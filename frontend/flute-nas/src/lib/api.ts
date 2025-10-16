@@ -53,6 +53,7 @@ export class FluteAPI {
     uploadFile(path: string = '/', fp: FileProgress, onProgress: any): Promise<any> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
+            fp.xhr = xhr;
             const formData = new FormData();
             formData.append(fp.file.name, fp.file);
 
