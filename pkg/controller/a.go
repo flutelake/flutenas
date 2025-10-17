@@ -34,6 +34,7 @@ func (s *StorageDeviceController) MountPoint() {
 	for _, mountPoint := range mountPoints {
 		mpMap[mountPoint.HostID] = append(mpMap[mountPoint.HostID], mountPoint)
 	}
+
 	for n, mps := range mpMap {
 		var host model.Host
 		if err := db.Instance().First(&host, "ID = ?", n).Error; err != nil {
@@ -42,6 +43,15 @@ func (s *StorageDeviceController) MountPoint() {
 		}
 
 		exec := node.NewExec().SetHost(host.HostIP)
+		disks, err := node.DescribeDisk(host.HostIP)
+		if err != nil {
+			flog.Errorf("Error describe disk: %v", err)
+			continue
+		}
+		diskMap := make(map[string]model.DiskDevice)
+		for _, d := range disks {
+			diskMap[d.UUID] = d
+		}
 		points, err := node.DescribeMountedPoint(host.HostIP)
 		if err != nil {
 			flog.Errorf("Error describe mount point: %v", err)
@@ -57,7 +67,14 @@ func (s *StorageDeviceController) MountPoint() {
 			if mp.Path == "" || util.Trim(mp.Path) == "/mnt" {
 				continue
 			}
-			mounted, ok := devicePointMap[mp.Device]
+			disk, ok := diskMap[mp.UUID]
+			if !ok {
+				flog.Infof("Mount point disk not exist, uuid: %s,  try to delete", mp.UUID)
+				db.Instance().Delete(&model.MountPoint{}, "ID = ?", mp.ID)
+				continue
+			}
+			// 使用UUID对应的实际设备名称，系统重启可能会导致设备名发生变化
+			mounted, ok := devicePointMap[disk.Name]
 			if ok {
 				if mounted.Point != mp.Path {
 					// 解绑

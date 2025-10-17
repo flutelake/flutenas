@@ -67,6 +67,7 @@ func SetMountPoint(w *apiserver.Response, r *apiserver.Request) {
 		)
 		return
 	}
+	// in.Path 为空 表示取消挂载，且无挂载记录 直接返回成功
 	if len(mountPoints) == 0 && in.Path == "" {
 		w.Write(retcode.StatusOK(&model.SetMountPointResponse{}))
 	}
@@ -95,36 +96,34 @@ func setMountPoint(w *apiserver.Response, r *apiserver.Request, in *model.SetMou
 	p := filepath.Join("/mnt", util.Trim(in.Path))
 
 	// 检查是否已经挂载
-	mounted := false
-	mountedOther := ""
-	points, err := node.DescribeMountedPoint(host.HostIP)
-	if err != nil {
-		w.WriteError(err, retcode.StatusError(nil))
-		return
-	}
-	for _, item := range points {
-		if item.Device == in.Device {
-			if item.Point == p {
-				mounted = true
-			} else {
-				mountedOther = item.Point
-			}
-		}
-	}
-	if mounted {
-		// 已经挂载， 且路径一致
-		w.Write(retcode.StatusOK(&model.SetMountPointResponse{}))
-		return
-	}
-	if mountedOther != "" {
-		// 切换挂载点时接口中不要去解绑
-		// 已经挂载，但是路径不一致，需要先解挂载
-		// err := cmd.UmountDir(mountedOther)
-		// if err != nil {
-		// 	// 解卦失败的问题，暂时不返回错误，等控制器来解挂
-		// 	flog.Errorf("umount  %s error: %v", mountedOther, err)
-		// }
-	}
+	// mounted := false
+	// mountedOther := ""
+	// points, err := node.DescribeMountedPoint(host.HostIP)
+	// if err != nil {
+	// 	w.WriteError(err, retcode.StatusError(nil))
+	// 	return
+	// }
+	// for _, item := range points {
+	// 	if item.Device == in.Device {
+	// 		if item.Point == p {
+	// 			mounted = true
+	// 		} else {
+	// 			mountedOther = item.Point
+	// 		}
+	// 	}
+	// }
+
+	// if mountedOther != "" {
+	// 	// 切换挂载点时接口中不要去解绑
+	// 	// 已经挂载，但是路径不一致，需要先解挂载
+	// 	// err := cmd.UmountDir(mountedOther)
+	// 	// if err != nil {
+	// 	// 	// 解卦失败的问题，暂时不返回错误，等控制器来解挂
+	// 	// 	flog.Errorf("umount  %s error: %v", mountedOther, err)
+	// 	// }
+	// }
+
+	// 挂载掉 要去掉 /dev/sdb记录，且UUID为fs uuid可能存在变化，挂载的时候需要根据实际情况判断
 
 	result := db.Instance().
 		Where(&model.MountPoint{UUID: in.UUID, HostIP: host.HostIP}).
