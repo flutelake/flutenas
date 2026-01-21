@@ -28,6 +28,7 @@
 	let entries :FileEntry[] = []
 	let dirPath :string = '/'
 	let loading : boolean = false
+	let group : string[] = []
 	
 	$: readDir(dirPath)
 	onMount(() => {
@@ -66,6 +67,9 @@
 	let openCreateDirModal :boolean = false;
 	function toggleCreateDirModal() {
 		openCreateDirModal = !openCreateDirModal
+	}
+	function toggleDeleteModal() {
+		console.log(group)
 	}
 	
 	let showUploadingToast = false
@@ -180,13 +184,14 @@
 							<input placeholder="/" bind:value={dirPath} class="border" />
 						</div>
 						<div class="flex items-center space-x-4">
+							<GradientButton color="pinkToOrange" on:click={toggleDeleteModal}>Delete</GradientButton>
 							<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {readDir(dirPath)}}><RefreshOutline class="w-6 h-6" /></Button>
 							<GradientButton color="purpleToBlue" on:click={toggleUploadModal}>Upload</GradientButton>
 							<GradientButton color="pinkToOrange" on:click={toggleCreateDirModal}>CreateDir</GradientButton>
 						</div>
 					</div>
 				</div>
-				<FileTable files={entries} bind:loading={loading} bind:dirPath={dirPath} on:refesh_list_msg={()=>readDir(dirPath)}></FileTable>
+				<FileTable files={entries} bind:loading={loading} bind:dirPath={dirPath} bind:group={group} on:refesh_list_msg={()=>readDir(dirPath)}></FileTable>
 			</Card>
 		</div>
 	</div>

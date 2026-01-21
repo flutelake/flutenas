@@ -40,7 +40,8 @@ type UploadFilesResponse struct {
 }
 
 type RemoveFileRequest struct {
-	Path string `doc:"文件路径" validate:"required"`
+	Path  string   `doc:"文件路径" validate:"required"`
+	Paths []string `doc:"文件路径多个" validate:"required"`
 }
 
 type RemoveFileResponse struct {

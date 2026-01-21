@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { FileEntry } from '$lib/model';
-  import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+  import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox } from 'flowbite-svelte';
   import { A } from 'flowbite-svelte';
   import { FolderOpenSolid, RefreshOutline } from 'flowbite-svelte-icons';
   import { formatSize } from '$lib/index';
@@ -12,7 +12,10 @@
   export let files: FileEntry[] = [];
   export let dirPath : string = '/';
   export let loading : boolean = false;
+  export let group: string[]= [];
 
+  $: showGroup(group)
+  function showGroup(g:string[]) { console.log(g)}
   function forward() {
     const pathParts = dirPath.split('/').filter(Boolean);
     pathParts.pop(); // 移除最后一个部分
@@ -44,6 +47,9 @@
 
 <Table hoverable={true}>
     <TableHead>
+      <TableHeadCell class="p-4!">
+        <Checkbox disabled />
+      </TableHeadCell>
       <TableHeadCell>FileName</TableHeadCell>
       <TableHeadCell>Size</TableHeadCell>
       <TableHeadCell>LastModify</TableHeadCell>
@@ -72,8 +78,14 @@
         {#each files as file}
         <TableBodyRow>
             {#if file.isDir }
+            <TableHeadCell class="p-4!">
+               <Checkbox disabled/>
+            </TableHeadCell>
             <TableBodyCell><A href="#" on:click={() => {dirPath = dirPath.endsWith('/')? dirPath + file.name : dirPath + '/' + file.name}}><FolderOpenSolid></FolderOpenSolid>&nbsp;{file.name}</A></TableBodyCell>
             {:else}
+            <TableHeadCell class="p-4!">
+              <Checkbox value={file.name} bind:group />
+            </TableHeadCell>
             <TableBodyCell>&nbsp;{file.name}</TableBodyCell>
             {/if}
             <TableBodyCell>{file.isDir ? '' : formatSize(file.size)}</TableBodyCell>

@@ -74,11 +74,16 @@ func ReadDir(w *apiserver.Response, r *apiserver.Request) {
 		w.WriteError(err, retcode.StatusError(nil))
 		return
 	}
+	enDirs := make([]model.FileEntry, 0)
 	ens := make([]model.FileEntry, 0)
 	for _, item := range entities {
 		en := model.FileEntry{
 			Name:  item.Name(),
 			IsDir: item.IsDir(),
+		}
+		if item.IsDir() {
+			enDirs = append(enDirs, en)
+			continue
 		}
 		fileInfo, err := item.Info()
 		if err != nil {
@@ -93,7 +98,7 @@ func ReadDir(w *apiserver.Response, r *apiserver.Request) {
 	}
 
 	out := model.ReadDirResponse{
-		Entries: ens,
+		Entries: append(enDirs, ens...),
 	}
 	w.Write(retcode.StatusOK(out))
 }
@@ -129,21 +134,34 @@ func RemoveFile(w *apiserver.Response, r *apiserver.Request) {
 		w.WriteError(err, retcode.StatusError(nil))
 		return
 	}
-	p := filepath.Join("/mnt", filepath.Clean(string(filepath.Separator)+in.Path))
-	_, err := os.Stat(p)
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			w.Write(retcode.StatusOK)
-			return
+	ps := []string{}
+	if in.Path != "" {
+		p := filepath.Join("/mnt", filepath.Clean(string(filepath.Separator)+in.Path))
+		ps = append(ps, p)
+	}
+	if in.Paths != nil {
+		for _, item := range in.Paths {
+			p := filepath.Join("/mnt", filepath.Clean(string(filepath.Separator)+item))
+			ps = append(ps, p)
 		}
-		w.WriteError(err, retcode.StatusError(nil))
-		return
 	}
 
-	err = os.RemoveAll(p)
-	if err != nil {
-		w.WriteError(err, retcode.StatusError(nil))
-		return
+	for _, p := range ps {
+		_, err := os.Stat(p)
+		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				w.Write(retcode.StatusOK)
+				return
+			}
+			w.WriteError(err, retcode.StatusError(nil))
+			return
+		}
+
+		err = os.RemoveAll(p)
+		if err != nil {
+			w.WriteError(err, retcode.StatusError(nil))
+			return
+		}
 	}
 	out := model.RemoveFileResponse{}
 	w.Write(retcode.StatusOK(out))
