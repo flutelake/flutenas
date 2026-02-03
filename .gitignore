@@ -1,5 +1,44 @@
+# IDE
 .vscode
+.codebuddy
+.idea
+*.swp
+*.swo
+*~
+commands
+
+# Project specific
 .flute
 git_backup
-dist
+.specify
+specs
+specs/specs-bak
+
+# Build outputs
+dist/
+build/
+frontend/flute-nas/build/
+frontend/flute-nas/.svelte-kit/
 frontend/flowbite-svelte-admin-dashboard-main
+
+# Dependencies
+frontend/flute-nas/node_modules/
+frontend/flowbite-svelte-admin-dashboard-main/node_modules/
+vendor/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

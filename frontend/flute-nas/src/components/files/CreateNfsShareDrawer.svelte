@@ -4,11 +4,13 @@
   import toast, { Toaster } from 'svelte-french-toast';
   import { sineIn } from 'svelte/easing';
   import { FluteAPI } from '$lib/api';
-  import { type SambaUser } from '$lib/interface';
+  import { type NFSExportAcl } from '$lib/interface';
   // import DirectoryDropdown from './DirectoryDropdown.svelte';
   import DirectoryDialog from './DirectoryDialog.svelte';
 	import { onMount } from 'svelte';
   import { CurrentHostIP } from '$lib/vars';
+  import { createEventDispatcher } from 'svelte';
+  const dispatch = createEventDispatcher();
     
   
   export let selectedPath = '';
@@ -24,70 +26,48 @@
     Name: string;
     Path: string;
     Pseudo: string;
-    Users: SambaUser[];
+    DefaultACL: string;
+    Acls: NFSExportAcl[];
   } = {
 		Name: '',
 		Path: '',
 		Pseudo: '',
-    Users: [],
+    DefaultACL: 'None',
+    Acls: [],
 	};
 
-  let users :SambaUser[] = [{
-    ID: 0,
-    Username: "",
-    Password: "",
-    Status: "",
-    CreatedAt: new Date(),
+  let acls :NFSExportAcl[] = [{
+    IPRange: "",
     Permission: "",
   }];
 
   let permissions = [
-    { value: 'r', name: 'Read Only' },
-    { value: 'rw', name: 'Read & Write' },
+    { value: 'RW', name: 'Read & Write' },
+    { value: 'RO', name: 'Read Only' },
+    { value: 'None', name: 'Deny Access' },
   ];
 
-  let sambaUsers :any[] = [];
-
-  onMount(() => {
-    getSambaUsers();
-  });
-  function getSambaUsers() {
-    const api = new FluteAPI();
-    api.post('/v1/samba-user/list', {"HostIP": CurrentHostIP}).then((resp) => {
-      sambaUsers = resp.data.Users.map((user: { ID: string; Username: string }) => ({
-        value: user.Username,
-        name: user.Username,
-      }));
-    }).catch((err: any) => {
-      console.error('Failed to load Samba users:', err.message);
-    });
-  }
-
-  function onClickAddUserInput() {
-    users.push({
-      ID: 0,
-      Username: "",
-      Password: "",
-      Status: "",
-      CreatedAt: new Date(),
+  function onClickAddAclInput() {
+    acls.push({
+      IPRange: "",
       Permission: "",
     });
-    users = users;
+    acls = acls;
   }
 
-  function onClickDelUserInput(idx: number) {
-    if (users.length <= 1) {
+  function onClickDelAclInput(idx: number) {
+    if (acls.length <= 1) {
       // 不允许全部删除掉
       return;
     }
-    if (idx >= 0 && idx < users.length) {
-      users.splice(idx, 1); // 从 idx 开始删除 1 个元素
+    if (idx >= 0 && idx < acls.length) {
+      acls.splice(idx, 1); // 从 idx 开始删除 1 个元素
     }
-    users = users
+    acls = acls
   }
 
   function submit() {
-    formData.Users = users;
+    formData.Acls = acls;
     formData.Path = selectedPath;  // 确保使用选择的路径
 
     // 检查表单参数
@@ -106,31 +86,31 @@
       return;
     }
 
-    // 检查用户配置
-    for (let i = 0; i < formData.Users.length; i++) {
-      const user = formData.Users[i];
-      if (!user.Username.trim()) {
-        toast.error(`The username of the ${i + 1}th samba user cannot be empty.`);
+    // 检查ACL配置
+    for (let i = 0; i < formData.Acls.length; i++) {
+      const acl = formData.Acls[i];
+      if (!acl.IPRange.trim()) {
+        toast.error(`The IP range of the ${i + 1}th NFS client cannot be empty.`);
         return;
       }
-      if (!user.Permission) {
-        toast.error(`The permission of the ${i + 1}th samba user cannot be empty.`);
+      if (!acl.Permission) {
+        toast.error(`The permission of the ${i + 1}th NFS client cannot be empty.`);
         return;
       }
     }
     
     const api = new FluteAPI();
-    api.post('/v1/samba-share/create', {
+    api.post('/v1/nfs-share/create', {
       ...formData,
       HostIP: $CurrentHostIP ? $CurrentHostIP : "127.0.0.1"
     }).then((resp) => {
       // 提交成功后的处理
       hidden = true;  // 关闭抽屉
-      // 可以添加成功提示
+      toast.success('NFS share created successfully');
+      // 触发刷新列表事件
+      dispatch('refresh_nfs_share_list_msg');
     }).catch((err) => {
-      toast.error('Failed to create Samba share:', err.message);
-      // console.error();
-      // 可以添加错误提示
+      toast.error('Failed to create NFS share: ' + err.message);
     });
   }
    
@@ -139,7 +119,7 @@
   <Drawer placement="right" transitionType="fly" {transitionParamsRight} bind:hidden={hidden} id="sidebar3" activateClickOutside={false} width='w-2/5'>
     <div class="flex items-center">
       <h5 id="drawer-label" class="inline-flex items-center mb-6 text-base font-semibold text-gray-500 uppercase dark:text-gray-400">
-        <InfoCircleSolid class="w-5 h-5 me-2.5" />Create Samba Share
+        <InfoCircleSolid class="w-5 h-5 me-2.5" />Create NFS Share
       </h5>
       <CloseButton on:click={() => (hidden = true)} class="mb-4 dark:text-white" />
     </div>
@@ -154,37 +134,43 @@
       </div>
       <div class="mb-6">
         <Label for="Path" class="mb-2">Shared Dir Path</Label>
-        <button on:click={() => selectDirModalFlag = true}><Input id="Pseudo" name="Pseudo" value={selectedPath} required placeholder="" /></button>
+        <button on:click={() => selectDirModalFlag = true}><Input id="Path" name="Path" value={selectedPath} required placeholder="" readonly/></button>
       </div>
-      <!-- choose samba user -->
       <div class="mb-6">
-      <Label for="user" class="mb-2">User</Label>
-      {#each users as ui, index }
+        <Label for="DefaultACL" class="mb-2">Default ACL</Label>
+        <Select id="DefaultACL" items={permissions} bind:value={formData.DefaultACL} placeholder="Choose Default Permission"/>
+      </div>
+      <!-- configure NFS clients with ACLs -->
+      {#if formData.DefaultACL != 'RW' }
+      <div class="mb-6">
+      <Label for="client" class="mb-2">Client Access Control</Label>
+      {#each acls as acl, index }
           <div class="grid grid-cols-5 content-start gap-6 ">
             <div class="col-span-2"> 
-              <Select class="mb-2" items={sambaUsers} bind:value={ui.Username} placeholder="Select User"/>
+              <Input id="IPRange" name="IPRange" bind:value={acl.IPRange} placeholder="Client IPs" />
             </div>
             <div class="col-span-2">
-              <Select class="mb-2" items={permissions} bind:value={ui.Permission} placeholder="Choose Permission"/>
+              <Select class="mb-2" items={permissions} bind:value={acl.Permission} placeholder="Choose Permission"/>
             </div>
             <div class="col-span-1">
               {#if index == 0 }
-              <Button color="red" class="w-full"  on:click={() => onClickDelUserInput(index)} disabled>
+              <Button color="red" class="w-full"  on:click={() => onClickDelAclInput(index)} disabled>
                 <TrashBinSolid size="sm" /> Del
               </Button>
               {:else}
-              <Button color="red" class="w-full"  on:click={() => onClickDelUserInput(index)}>
+              <Button color="red" class="w-full"  on:click={() => onClickDelAclInput(index)}>
                 <TrashBinSolid size="sm" /> Del
               </Button>
               {/if}
             </div>
           </div>
       {/each}
-      <Button on:click={() => onClickAddUserInput()} class="w-full">+ Add User</Button>
+      <Button on:click={() => onClickAddAclInput()} class="w-full">+ Add Client</Button>
       </div>
+      {/if}
       
       <Button on:click={() => submit()} class="w-full">Submit</Button>
     </form>
   </Drawer>
 
-  <DirectoryDialog bind:open={selectDirModalFlag} bind:selectedPath={selectedPath} on:refresh_samba_user_list_msg={()=>console.log('1112')}></DirectoryDialog>
+  <DirectoryDialog bind:open={selectDirModalFlag} bind:selectedPath={selectedPath} on:refresh_nfs_share_list_msg={()=>console.log('1112')}></DirectoryDialog>

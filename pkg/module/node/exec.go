@@ -200,6 +200,53 @@ func (x *Exec) localCommand(cmd string) ([]byte, error) {
 	return output, nil
 }
 
+// CommandWithExitCode runs a command and returns its output and exit code regardless of success/failure
+func (x *Exec) CommandWithoutExitCode(cmd string) ([]byte, error) {
+	cmd = cmd + " 2>&1"
+	if x.isLocalHost() {
+		return x.localCommandWithoutExitCode(cmd)
+	}
+	if x.client == nil {
+		if err := x.Connect(); err != nil {
+			return nil, err
+		}
+	}
+
+	session, err := x.client.NewSession()
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+
+	if err := session.Setenv("LANG", "en_US.UTF-8"); err != nil {
+		return nil, fmt.Errorf("set env error: %v", err)
+	}
+
+	var stdoutBuf bytes.Buffer
+	session.Stdout = &stdoutBuf
+
+	// run the command on the remote server, don't return error on non-zero exit code
+	err = session.Run(cmd)
+	// We always return the output, even if there was an error (non-zero exit code)
+	output := stdoutBuf.Bytes()
+
+	// If there was no error, return normally
+	if err == nil {
+		return output, nil
+	}
+
+	// If there was an error but we got output, return the output anyway
+	// This handles cases like systemctl is-active where different exit codes indicate different states
+	return output, nil
+}
+
+func (x *Exec) localCommandWithoutExitCode(cmd string) ([]byte, error) {
+	command := exec.Command("sh", "-c", cmd)
+	command.Env = append(os.Environ(), "LANG=en_US.UTF-8")
+	output, _ := command.CombinedOutput() // Ignore error to always return output
+	return output, nil
+}
+
 // readPrivateKeys 读取私钥文件
 func ReadPrivateKeys(path string) ([]ssh.Signer, error) {
 	info, err := os.Stat(path)

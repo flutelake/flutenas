@@ -11,6 +11,7 @@
 	export let node : string = 'localhost';
 	import { CurrentHostIP } from '$lib/vars';
 	import { type SambaUser } from '$lib/interface'
+	import { formatDateTime } from '$lib/index';
 	import CreateSambaUserModal from '../../../../components/files/CreateSambaUserModal.svelte';
 	import UpdateSambaUserModal from '../../../../components/files/UpdateSambaUserModal.svelte';
 	import DeleteSambaUserModal from '../../../../components/files/DeleteSambaUserModal.svelte';
@@ -34,7 +35,7 @@
 
 	let users :SambaUser[] = [];
 	$: refreshList($CurrentHostIP)
-	function refreshList(ip :string) {
+	function refreshList(ip :string = $CurrentHostIP) {
 		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
@@ -122,7 +123,7 @@
 					<TableBodyCell class="p-4">{u.ID}</TableBodyCell>
 					<TableBodyCell class="p-4">{u.Username}</TableBodyCell>
 					<TableBodyCell class="p-4">{u.Status}</TableBodyCell>
-					<TableBodyCell class="p-4">{u.CreatedAt}</TableBodyCell>
+					<TableBodyCell class="p-4">{formatDateTime(u.CreatedAt)}</TableBodyCell>
 					<TableBodyCell class="p-4">
 						<Button size="sm" class="gap-2 px-3" on:click={() => onClickUpdateUser(index)}>
 							<EditOutline size="sm" /> Edit PWD

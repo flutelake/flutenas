@@ -6,7 +6,9 @@ import (
 	"flutelake/fluteNAS/pkg/module/db"
 	"flutelake/fluteNAS/pkg/module/flog"
 	"flutelake/fluteNAS/pkg/module/node"
+	"fmt"
 	"html/template"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -49,6 +51,15 @@ func (s *SambaShareController) DoOnHost(host model.Host) {
 		return
 	}
 
+	if len(smbShares) == 0 {
+		flog.Debugf("No enabled samba exports found, skipping sync")
+		return
+	}
+
+	if err := CheckAndMaintainSambaService(); err != nil {
+		flog.Warnf("check and maintain samba service failed, error: %v", err)
+	}
+
 	updateIDs := []uint{}
 	deleteIDs := []uint{}
 	change := false
@@ -82,7 +93,7 @@ func (s *SambaShareController) DoOnHost(host model.Host) {
 		}
 		ex := SambaExport{
 			ShareID:           s.Pseudo, //fmt.Sprintf("%d", s.ID),
-			Path:              s.Path,
+			Path:              filepath.Join("/mnt", s.Path),
 			ValidUsers:        strings.Join(vaildUsers.List(), " "),
 			WriteUsers:        strings.Join(writeUsers.List(), " "),
 			Everyone:          everyone,
@@ -225,3 +236,29 @@ const _sambaShareTemplate = `
 
 // force user = root
 // force group = root
+
+func CheckAndMaintainSambaService() error {
+
+	cmd := node.NewExec().SetHost("127.0.0.1")
+	defer cmd.Close()
+	output, err := cmd.CommandWithoutExitCode("systemctl is-active smbd")
+	if err != nil {
+		return fmt.Errorf("failed to check Samba enable status: %w", err)
+	}
+	if strings.TrimSpace(string(output)) != "active" {
+		cmd.CommandWithoutExitCode("systemctl start smbd")
+	}
+
+	output, err = cmd.CommandWithoutExitCode("systemctl is-enabled smbd")
+	if err != nil {
+		return fmt.Errorf("failed to check Samba enable status: %w", err)
+	}
+
+	enabledState := strings.TrimSpace(string(output))
+	if enabledState != "enabled" {
+		flog.Warnf("Samba service is not enabled at boot: %s", enabledState)
+		cmd.CommandWithoutExitCode("systemctl enable smbd")
+	}
+
+	return nil
+}

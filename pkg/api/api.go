@@ -72,9 +72,18 @@ func RegisterHandlersV1(
 	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/update").Handler(nfsShareServer.UpdateNFSExport))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/delete").Handler(nfsShareServer.DeleteNFSExport))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-share/status").Handler(nfsShareServer.NFSStatus))
+	// nfs server control
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-server/start").Handler(nfsShareServer.StartNFSServer))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-server/stop").Handler(nfsShareServer.StopNFSServer))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-server/status").Handler(nfsShareServer.GetNFSServerStatus))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-server/validate").Handler(nfsShareServer.ValidateNFSConfig))
+	// nfs export status control
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-export/update-status").Handler(nfsShareServer.UpdateExportStatus))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/nfs-export/test-config").Handler(nfsShareServer.TestExportConfig))
 
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/host/system-info").Handler(v1.GetHostSystemInfo))
 }
 
 func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {

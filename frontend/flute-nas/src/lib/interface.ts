@@ -13,6 +13,42 @@ export interface Host {
     OSVersion: string;
     Arch: string;
     Kernel: string;
+    DistroID?: string;
+    DistroVersion?: string;
+    DistroIDLike?: string;
+    PackageManager?: string;
+    NFSInstalled?: boolean;
+    NFSVersion?: string;
+    NFSServiceStatus?: string;
+    LastChecked?: Date;
+}
+
+export interface HostSystemInfo {
+    HostIP: string;
+    Hostname: string;
+    DistroID: string;
+    DistroVersion: string;
+    DistroIDLike: string;
+    PackageManager: string;
+    Kernel: string;
+    Arch: string;
+    NFSInstalled: boolean;
+    NFSVersion: string;
+    NFSServiceStatus: string;
+    InstallCommands: string[];
+}
+
+export interface NFSStatus {
+    Status: string;
+    Uptime?: string;
+    ProcessID?: string;
+}
+
+export interface NFSStartResponse {
+    Status: string;
+    SetupCommands?: string[];
+    InstallCommands?: string[];
+    InstallRequired?: boolean;
 }
 
 export interface SambaUser {
@@ -47,6 +83,7 @@ export interface NFSExport {
     Name: string;
     Path: string;
     Pseudo: string;
+    DefaultACL: string;
     Status: string;
     Acls: NFSExportAcl[];
     Protocols: string;

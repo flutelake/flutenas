@@ -27,7 +27,7 @@
     }
 </script>
 
-<Modal title="选择目录" bind:open={open}>
+<Modal title="Select Directory" bind:open={open}>
     <div class="p-4">
         <Tree data={sampleData} bind:selectedPath />
     </div>

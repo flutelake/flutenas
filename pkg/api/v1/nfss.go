@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 
@@ -115,13 +116,14 @@ func (s *NFSShareServer) DeleteNFSExport(w *apiserver.Response, r *apiserver.Req
 
 // 添加UpdateNFSExportRequest结构体
 type UpdateNFSExportRequest struct {
-	ID        uint   `json:"ID" validate:"required"`
-	HostIP    string `json:"HostIP"`
-	Name      string `json:"Name"`
-	Path      string `json:"Path"`
-	Pseudo    string `json:"Pseudo"`
-	Acls      string `json:"Acls"`
-	Protocols string `json:"Protocols"`
+	ID         uint   `json:"ID" validate:"required"`
+	HostIP     string `json:"HostIP"`
+	Name       string `json:"Name"`
+	Path       string `json:"Path"`
+	Pseudo     string `json:"Pseudo"`
+	DefaultACL string `json:"DefaultACL"`
+	Acls       string `json:"Acls"`
+	Protocols  string `json:"Protocols"`
 }
 
 // UpdateNFSExport 更新NFS共享
@@ -155,13 +157,14 @@ func (s *NFSShareServer) UpdateNFSExport(w *apiserver.Response, r *apiserver.Req
 
 	// 更新记录
 	updatedExport := model.NFSExport{
-		ID:        in.ID,
-		HostIP:    in.HostIP,
-		Name:      in.Name,
-		Path:      in.Path,
-		Pseudo:    in.Pseudo,
-		Acls:      in.Acls,
-		Protocols: in.Protocols,
+		ID:         in.ID,
+		HostIP:     in.HostIP,
+		Name:       in.Name,
+		Path:       in.Path,
+		Pseudo:     in.Pseudo,
+		DefaultACL: in.DefaultACL,
+		Acls:       in.Acls,
+		Protocols:  in.Protocols,
 	}
 
 	// 保留创建时间
@@ -246,7 +249,9 @@ func (s *NFSShareServer) NFSStatus(w *apiserver.Response, r *apiserver.Request) 
 	}
 
 	if util.Trim(string(resBs)) == "not_installed" {
+		// 安装NFS-Ganesha，带apt锁检测和等待机制
 		installScript := `
+            # 检测操作系统类型
             if command -v apt-get >/dev/null 2>&1; then
                 # Debian/Ubuntu
                 apt-get update && apt-get install -y nfs-ganesha
@@ -289,4 +294,295 @@ func (s *NFSShareServer) NFSStatus(w *apiserver.Response, r *apiserver.Request) 
 	}
 
 	w.Write(retcode.StatusOK(out))
+}
+
+// StartNFSServerRequest 启动NFS服务请求
+type StartNFSServerRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+}
+
+// StartNFSServerResponse 启动NFS服务响应
+type StartNFSServerResponse struct {
+	Status  string `json:"Status"`
+	Message string `json:"Message"`
+}
+
+// StopNFSServerRequest 停止NFS服务请求
+type StopNFSServerRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+}
+
+// StopNFSServerResponse 停止NFS服务响应
+type StopNFSServerResponse struct {
+	Status  string `json:"Status"`
+	Message string `json:"Message"`
+}
+
+// GetNFSServerStatusRequest 获取NFS服务状态请求
+type GetNFSServerStatusRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+}
+
+// GetNFSServerStatusResponse 获取NFS服务状态响应
+type GetNFSServerStatusResponse struct {
+	Status  string `json:"Status"`
+	Uptime  string `json:"Uptime"`
+	Message string `json:"Message"`
+}
+
+// StartNFSServer 启动NFS服务
+func (s *NFSShareServer) StartNFSServer(w *apiserver.Response, r *apiserver.Request) {
+	in := &StartNFSServerRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 记录审计日志
+	flog.Infof("[AUDIT][NFS] User: %s, Action: start-service, Host: %s",
+		getCurrentUser(r), in.HostIP)
+
+	// 启动服务
+	if err := node.StartNFSServerControl(in.HostIP); err != nil {
+		flog.Errorf("start NFS server on host: %s, error: %v", in.HostIP, err)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	out := &StartNFSServerResponse{
+		Status:  "running",
+		Message: "NFS服务已启动",
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// StopNFSServer 停止NFS服务
+func (s *NFSShareServer) StopNFSServer(w *apiserver.Response, r *apiserver.Request) {
+	in := &StopNFSServerRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 记录审计日志
+	flog.Infof("[AUDIT][NFS] User: %s, Action: stop-service, Host: %s",
+		getCurrentUser(r), in.HostIP)
+
+	// 停止服务
+	if err := node.StopNFSServerControl(in.HostIP); err != nil {
+		flog.Errorf("stop NFS server on host: %s, error: %v", in.HostIP, err)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	out := &StopNFSServerResponse{
+		Status:  "stopped",
+		Message: "NFS服务已停止",
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// GetNFSServerStatus 获取NFS服务状态
+func (s *NFSShareServer) GetNFSServerStatus(w *apiserver.Response, r *apiserver.Request) {
+	in := &GetNFSServerStatusRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 获取服务状态
+	status, uptime, err := node.GetNFSServerStatusControl(in.HostIP)
+	if err != nil {
+		flog.Errorf("get NFS server status on host: %s, error: %v", in.HostIP, err)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	out := &GetNFSServerStatusResponse{
+		Status:  status,
+		Uptime:  uptime,
+		Message: fmt.Sprintf("NFS服务状态: %s", status),
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// ValidateNFSConfigRequest 验证NFS配置请求
+type ValidateNFSConfigRequest struct {
+	ConfigPath string `json:"ConfigPath"`
+}
+
+// ValidateNFSConfigResponse 验证NFS配置响应
+type ValidateNFSConfigResponse struct {
+	Valid   bool     `json:"Valid"`
+	Errors  []string `json:"Errors"`
+	Message string   `json:"Message"`
+}
+
+// ValidateNFSConfig 验证NFS配置文件语法
+func (s *NFSShareServer) ValidateNFSConfig(w *apiserver.Response, r *apiserver.Request) {
+	in := &ValidateNFSConfigRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 如果未指定配置路径，使用默认路径
+	configPath := in.ConfigPath
+	if configPath == "" {
+		configPath = "/etc/ganesha/ganesha.conf"
+	}
+
+	// 验证配置
+	if err := node.ValidateNFSConfigFile(configPath); err != nil {
+		out := &ValidateNFSConfigResponse{
+			Valid:   false,
+			Errors:  []string{err.Error()},
+			Message: "配置验证失败",
+		}
+		w.Write(retcode.StatusOK(out))
+		return
+	}
+
+	out := &ValidateNFSConfigResponse{
+		Valid:   true,
+		Errors:  []string{},
+		Message: "配置验证通过",
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// UpdateExportStatusRequest 更新导出规则状态请求
+type UpdateExportStatusRequest struct {
+	ID     uint   `json:"ID" validate:"required"`
+	Status string `json:"Status" validate:"required,oneof=enabled disabled"`
+}
+
+// UpdateExportStatusResponse 更新导出规则状态响应
+type UpdateExportStatusResponse struct {
+	Status  string `json:"Status"`
+	Message string `json:"Message"`
+}
+
+// UpdateExportStatus 更新导出规则状态（启用/禁用）
+func (s *NFSShareServer) UpdateExportStatus(w *apiserver.Response, r *apiserver.Request) {
+	in := &UpdateExportStatusRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 验证状态值
+	if in.Status != "enabled" && in.Status != "disabled" {
+		w.WriteError(errors.New("状态必须是enabled或disabled"), retcode.StatusError(nil))
+		return
+	}
+
+	// 记录审计日志
+	flog.Infof("[AUDIT][NFS] User: %s, Action: update-status, ID: %d, Status: %s",
+		getCurrentUser(r), in.ID, in.Status)
+
+	// 更新状态
+	dbInstance := db.Instance()
+	if err := model.UpdateStatus(dbInstance, in.ID, in.Status); err != nil {
+		flog.Errorf("update NFS export status failed, ID: %d, error: %v", in.ID, err)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 获取更新后的导出规则
+	var updatedExport model.NFSExport
+	if result := dbInstance.First(&updatedExport, in.ID); result.Error != nil {
+		flog.Errorf("get NFS export after status update failed, ID: %d, error: %v", in.ID, result.Error)
+		w.WriteError(result.Error, retcode.StatusError(nil))
+		return
+	}
+
+	// 尝试触发配置同步（异步进行，不阻塞响应）
+	go func() {
+		if err := triggerNFSConfigSync(updatedExport.HostIP); err != nil {
+			flog.Errorf("trigger NFS config sync after status update failed, HostIP: %s, error: %v",
+				updatedExport.HostIP, err)
+		}
+	}()
+
+	out := &UpdateExportStatusResponse{
+		Status:  in.Status,
+		Message: fmt.Sprintf("导出规则状态已更新为%s", in.Status),
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// TestExportConfigRequest 测试导出规则配置请求
+type TestExportConfigRequest struct {
+	Exports []model.NFSExport `json:"Exports" validate:"required"`
+}
+
+// TestExportConfigResponse 测试导出规则配置响应
+type TestExportConfigResponse struct {
+	Valid   bool     `json:"Valid"`
+	Errors  []string `json:"Errors"`
+	Message string   `json:"Message"`
+}
+
+// TestExportConfig 测试导出规则配置（模拟NFS-Ganesha配置加载）
+func (s *NFSShareServer) TestExportConfig(w *apiserver.Response, r *apiserver.Request) {
+	in := &TestExportConfigRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	// 记录审计日志
+	flog.Infof("[AUDIT][NFS] User: %s, Action: test-export-config, ExportCount: %d",
+		getCurrentUser(r), len(in.Exports))
+
+	// 过滤出启用的导出规则
+	var enabledExports []model.NFSExport
+	for _, export := range in.Exports {
+		if export.Status == "enabled" {
+			enabledExports = append(enabledExports, export)
+		}
+	}
+
+	// 生成临时配置并验证
+	testResult, err := node.TestNFSExportConfig(enabledExports)
+	if err != nil {
+		out := &TestExportConfigResponse{
+			Valid:   false,
+			Errors:  []string{err.Error()},
+			Message: "导出规则配置测试失败",
+		}
+		w.Write(retcode.StatusOK(out))
+		return
+	}
+
+	out := &TestExportConfigResponse{
+		Valid:   testResult.Valid,
+		Errors:  testResult.Errors,
+		Message: testResult.Message,
+	}
+	w.Write(retcode.StatusOK(out))
+}
+
+// triggerNFSConfigSync 触发NFS配置同步
+func triggerNFSConfigSync(hostIP string) error {
+	// 获取所有启用的导出规则
+	exports, err := model.GetEnabledByHostIP(db.Instance(), hostIP)
+	if err != nil {
+		return fmt.Errorf("get enabled exports for host %s failed: %w", hostIP, err)
+	}
+
+	// 使用exec来生成并应用配置
+	cmd := node.NewExec().SetHost(hostIP)
+	if err := cmd.RefreshNFSGaneshaConfig(exports); err != nil {
+		return fmt.Errorf("refresh NFS config for host %s failed: %w", hostIP, err)
+	}
+
+	return nil
+}
+
+// getCurrentUser 获取当前用户（简化实现）
+func getCurrentUser(r *apiserver.Request) string {
+	// TODO: 从session或token中获取实际用户名
+	return "admin"
 }

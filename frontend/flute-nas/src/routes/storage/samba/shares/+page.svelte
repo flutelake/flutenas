@@ -11,6 +11,7 @@
 	export let node : string = 'localhost';
 	import { CurrentHostIP } from '$lib/vars';
 	import { type SambaShare, type UserPermission } from '$lib/interface'
+	import { formatDateTime } from '$lib/index';
 	// import CreateSambaShareModal from '../../../../components/files/CreateSambaShareModal.svelte';
 	import UpdateSambaUserModal from '../../../../components/files/UpdateSambaUserModal.svelte';
 	import DeleteSambaUserModal from '../../../../components/files/DeleteSambaUserModal.svelte';
@@ -36,7 +37,7 @@
 
 	let shares :SambaShare[] = [];
 	$: refreshList($CurrentHostIP)
-	function refreshList(ip :string) {
+	function refreshList(ip :string = $CurrentHostIP) {
 		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
@@ -149,7 +150,7 @@
 	<Table>
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
 			<TableHeadCell class="w-4 p-4"><Checkbox /></TableHeadCell>
-			{#each ['Index', 'ShareName', 'Path', 'Pseudo Path', 'Status', 'Users', 'CreateAt', 'Action'] as title}
+			{#each ['Index', 'ShareName', 'Shared Dir Path', 'Pseudo Path', 'Status', 'Users', 'CreateAt', 'Action'] as title}
 				<TableHeadCell class="ps-4 font-normal">{title}</TableHeadCell>
 			{/each}
 		</TableHead>
@@ -162,8 +163,17 @@
 					<TableBodyCell class="p-4">{s.Path}</TableBodyCell>
 					<TableBodyCell class="p-4">{s.Pseudo}</TableBodyCell>
 					<TableBodyCell class="p-4">{s.Status}</TableBodyCell>
-					<TableBodyCell class="p-4">{formatUserPermission(s.Users)}</TableBodyCell>
-					<TableBodyCell class="p-4">{s.CreatedAt}</TableBodyCell>
+					<TableBodyCell class="p-4">
+						<div class="space-y-1">
+						{#each s.Users as u}
+							<div class="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md px-2 py-1 text-xs">
+								<span class="font-mono text-blue-800 dark:text-blue-300 font-medium">{u.Username}</span>
+								<span class="text-blue-600 dark:text-blue-400 ml-2 font-semibold">{formatPermission(u.Permission)}</span>
+							</div>
+						{/each}
+						</div>
+					</TableBodyCell>
+					<TableBodyCell class="p-4">{formatDateTime(s.CreatedAt)}</TableBodyCell>
 					<TableBodyCell class="p-4">
 						<!-- <Button size="sm" class="gap-2 px-3" on:click={() => onClickUpdateUser(index)}>
 							<EditOutline size="sm" /> Edit PWD

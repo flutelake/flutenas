@@ -6,3 +6,8 @@
     @apply animate-spin;
     animation-duration: 0.5s; /* 更快的旋转速度 */
 }
+
+/* Prevent background scrolling when modal is open */
+body.modal-open {
+    overflow: hidden !important;
+}

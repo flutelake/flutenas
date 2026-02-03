@@ -2,8 +2,8 @@
 	import { FileEntry } from '$lib/model';
   import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox } from 'flowbite-svelte';
   import { A } from 'flowbite-svelte';
-  import { FolderOpenSolid, RefreshOutline } from 'flowbite-svelte-icons';
-  import { formatSize } from '$lib/index';
+	import { FolderOpenSolid, RefreshOutline } from 'flowbite-svelte-icons';
+  import { formatSize, formatDateTime } from '$lib/index';
   import DeleteModal from './DeleteModal.svelte';
   import { createEventDispatcher } from 'svelte';
 	import { FluteAPI } from '$lib/api';
@@ -40,7 +40,6 @@
     })
 	}
 
-  const dateTimeOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' } as const;
   let openDeleteModal :boolean = false;
   let deleteFileName :string = '';
 </script>
@@ -89,7 +88,7 @@
             <TableBodyCell>&nbsp;{file.name}</TableBodyCell>
             {/if}
             <TableBodyCell>{file.isDir ? '' : formatSize(file.size)}</TableBodyCell>
-            <TableBodyCell>{new Date(file.lastMod).toLocaleString('zh-CN', dateTimeOptions)}</TableBodyCell>
+              <TableBodyCell>{formatDateTime(file.lastMod)}</TableBodyCell>
             <TableBodyCell>{file.isDir ? '' : file.kind}</TableBodyCell>
             <TableBodyCell>
             <A href="#" on:click={() => {downlodFilename = file.name; handleDownload()}}>Download</A>

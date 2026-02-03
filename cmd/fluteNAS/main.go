@@ -68,8 +68,8 @@ func main() {
 	// init db host table data
 	initSelfHost()
 
-	// create flute user and group
-	node.CreateFluteUserAndGroup()
+	// init os settings
+	initOS()
 
 	// register apis
 	api.RegisterHandlersV1(server, privateKey, publicKey, c, terms)
@@ -118,6 +118,7 @@ func initDB(pStr string) error {
 		&model.Host{},
 		&model.SambaUser{},
 		&model.SambaShare{},
+		&model.NFSExport{},
 	// &Network{},
 	// &Host{},
 	// &Operation{},
@@ -144,6 +145,12 @@ func initController(cron *controller.CronJob) error {
 
 	// 15s 检查一次samba share
 	err = cron.AddJob("sambaShare", "@every 15s", controller.NewSambaShareController().Do)
+	if err != nil {
+		return err
+	}
+
+	// 15s 检查一次nfs share
+	err = cron.AddJob("nfsShare", "@every 15s", controller.NewNFSShareController().Do)
 	if err != nil {
 		return err
 	}
@@ -181,5 +188,23 @@ func initSelfHost() {
 		if err := db.Instance().Create(&localhost).Error; err != nil {
 			flog.Fatalf("Error creating localhost record: %v", err)
 		}
+	}
+}
+
+// initOS 初始化系统的相关设置
+func initOS() {
+	// 创建 flute 用户和组
+	if err := node.CreateFluteUserAndGroup(); err != nil {
+		flog.Fatalf("Error creating flute user and group: %v", err)
+	}
+
+	// 设置SSHD配置允许setEnv LANG PS1 HISTFILE
+	if err := node.SetSshdConfig(); err != nil {
+		flog.Fatalf("Error setting sshd config allow setEnv LANG PS1 HISTFILE: %v", err)
+	}
+
+	// 添加shell OSC 133 支持
+	if err := node.AddShellOSC133Support(); err != nil {
+		flog.Fatalf("Error adding shell OSC 133 support: %v", err)
 	}
 }

@@ -6,6 +6,45 @@ import { formatSpeed } from '$lib/index'
 export class FluteAPI {
     constructor() {}
 
+    // 获取主机系统信息
+    async getHostSystemInfo(hostIP: string = '127.0.0.1'): Promise<any> {
+        return new Promise((resolve, reject) => {
+            axios.get(`/v1/host/system-info?HostIP=${hostIP}`).then((resp: AxiosResponse) => {
+                if (resp.data.code === 0) {
+                    resolve(resp.data);
+                } else {
+                    reject(new Error('Error code: ' + resp.data.code));
+                }
+            }).catch(err => {
+                if (err.response && err.response.status === 401) {
+                    console.log("Unauthorized, nav to login page");
+                    goto("/login")
+                }
+                reject(err);
+            });
+        });
+    }
+
+    // 检查NFS-Ganesha安装状态
+    async checkNFSInstallationStatus(hostIP: string = '127.0.0.1'): Promise<any> {
+        return this.post('/v1/nfs-server/status', { HostIP: hostIP });
+    }
+
+    // 启动NFS服务
+    async startNFSServer(hostIP: string = '127.0.0.1'): Promise<any> {
+        return this.post('/v1/nfs-server/start', { HostIP: hostIP });
+    }
+
+    // 停止NFS服务
+    async stopNFSServer(hostIP: string = '127.0.0.1'): Promise<any> {
+        return this.post('/v1/nfs-server/stop', { HostIP: hostIP });
+    }
+
+    // 获取NFS服务状态
+    async getNFSServiceStatus(hostIP: string = '127.0.0.1'): Promise<any> {
+        return this.post('/v1/nfs-server/status', { HostIP: hostIP });
+    }
+
     async post(api: string, data: any): Promise<any> { // 添加返回类型
         const that = this;
         return new Promise((resolve, reject) => {

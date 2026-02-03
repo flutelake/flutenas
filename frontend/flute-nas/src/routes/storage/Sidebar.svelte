@@ -63,8 +63,8 @@
 			name: 'NFS',
 			icon: RectangleListSolid,
 			children: {
-				// Users: '/storage/nfs/users',
-				Directories: '/storage/nfs/dirs'
+				'Server Status': '/storage/nfs/status',
+				Directories: '/storage/nfs/shares'
 			}
 		},
 		// { name: 'Settings', icon: CogOutline, href: '/settings' },
