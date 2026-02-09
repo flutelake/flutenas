@@ -23,6 +23,14 @@ func ListHosts(w *apiserver.Response, r *apiserver.Request) {
 	w.Write(retcode.StatusOK(out))
 }
 
+type HostMonitoringResponse struct {
+	HostIP    string             `json:"HostIP"`
+	Timestamp string             `json:"Timestamp"`
+	Node      node.NodeMetrics   `json:"Node"`
+	Samba     node.ServiceMetrics `json:"Samba"`
+	NFS       node.ServiceMetrics `json:"NFS"`
+}
+
 // HostSystemInfoResponse 主机系统信息响应
 type HostSystemInfoResponse struct {
 	HostIP           string   `json:"HostIP"`
@@ -101,6 +109,29 @@ func GetHostSystemInfo(w *apiserver.Response, r *apiserver.Request) {
 	// 将DistroIDLike数组转换为字符串
 	if len(distroInfo.IDLike) > 0 {
 		response.DistroIDLike = distroInfo.IDLike[0]
+	}
+
+	w.Write(retcode.StatusOK(response))
+}
+
+func GetHostMonitoringMetrics(w *apiserver.Response, r *apiserver.Request) {
+	hostIP := r.Request.URL.Query().Get("HostIP")
+	if hostIP == "" {
+		hostIP = "127.0.0.1"
+	}
+
+	metrics, err := node.GetMonitoringMetrics(hostIP)
+	if err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	response := HostMonitoringResponse{
+		HostIP:    metrics.HostIP,
+		Timestamp: metrics.Timestamp,
+		Node:      metrics.Node,
+		Samba:     metrics.Samba,
+		NFS:       metrics.NFS,
 	}
 
 	w.Write(retcode.StatusOK(response))

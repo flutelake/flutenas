@@ -1,11 +1,20 @@
 <script lang="ts">
-    import MetaTag from '../../../components/MetaTag.svelte';
-    import { Avatar, Breadcrumb, BreadcrumbItem, Button, Checkbox, Heading, Indicator } from 'flowbite-svelte';
+	import MetaTag from '../../../components/MetaTag.svelte';
+	import {
+		Avatar,
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Checkbox,
+		Heading,
+		Indicator
+	} from 'flowbite-svelte';
+	import Dashboard from '../../../components/dashboard/Dashboard.svelte';
 
 	const path: string = '/overview';
-    const description: string = 'Overview - flute nas console';
+	const description: string = 'Overview - flute nas console';
 	const metaTitle: string = 'FluteNAS Web Console - Overview';
-    const subtitle: string = 'overview';
+	const subtitle: string = 'overview';
 </script>
 
 <MetaTag {path} {description} title={metaTitle} {subtitle} />
@@ -16,9 +25,10 @@
 			<BreadcrumbItem home>Home</BreadcrumbItem>
 			<BreadcrumbItem href="/overview">Overview</BreadcrumbItem>
 		</Breadcrumb>
-		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+		<Heading tag="h1" class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
 			Overview
 		</Heading>
+		<Dashboard />
 	</div>
 </main>
 

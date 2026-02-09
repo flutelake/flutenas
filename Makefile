@@ -18,6 +18,7 @@ DIST_DIR_MIPS64LE := dist/mips64le
 
 all:
 	cd frontend/flute-nas/ && pnpm build
+	touch frontend/flute-nas/go-webserver.go
 	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
 
 #################### dev commands ####################
@@ -37,7 +38,7 @@ frontend:
 	cd frontend/flute-nas/ && pnpm build
 
 server:
-	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
+	$(GO_ENV) $(GO_ENV_AMD64) go build $(GO_LDFLAGS) -a -o $(DIST_DIR_AMD64)/flute-nas-server cmd/fluteNAS/main.go
 
 start_frontend:
 	cd frontend/flute-nas/ && pnpm dev

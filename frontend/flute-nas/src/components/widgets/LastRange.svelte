@@ -6,18 +6,20 @@
 
 	// dayjs.extend(LocalizedFormat);
 
-	type TimeSlot = keyof typeof timeslots;
+	type TimeSlotsMap = Record<string, number>;
 
-	export let timeslot: TimeSlot = 'Last 7 days';
-	export let timeslots = {
+	export let timeslots: TimeSlotsMap = {
 		Yesterday: -1,
 		Today: 0,
 		'Last 7 days': 7,
 		'Last 30 days': 30,
 		'Last 90 days': 90
 	};
+	export let timeslot: string = 'Last 7 days';
 
-	let timeslots_keys: TimeSlot[] = Object.keys(timeslots) as TimeSlot[];
+	let timeslots_keys: string[] = Object.keys(timeslots);
+
+	$: timeslots_keys = Object.keys(timeslots);
 
 	// let today = dayjs();
 	// $: start = today.subtract(timeslots[timeslot], 'days').format('ll');

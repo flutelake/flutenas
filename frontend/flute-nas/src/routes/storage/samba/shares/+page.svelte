@@ -1,16 +1,42 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Drawer, Heading, Input, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toolbar, ToolbarButton, Badge, Hr, GradientButton } from 'flowbite-svelte';
-	import { CogSolid, DotsVerticalOutline, EditOutline, ExclamationCircleSolid, TrashBinSolid, RefreshOutline } from 'flowbite-svelte-icons';
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Checkbox,
+		Drawer,
+		Heading,
+		Input,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Toolbar,
+		ToolbarButton,
+		Badge,
+		Hr,
+		GradientButton
+	} from 'flowbite-svelte';
+	import {
+		CogSolid,
+		DotsVerticalOutline,
+		EditOutline,
+		ExclamationCircleSolid,
+		TrashBinSolid,
+		RefreshOutline
+	} from 'flowbite-svelte-icons';
 	import type { ComponentType } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	import MetaTag from '../../../../components/MetaTag.svelte';
 	import { FluteAPI } from '$lib/api';
 	import { DiskDevice } from '$lib/model';
 	// import SetMountPointModal from '../../../../components/storage/SetMountPointModal.svelte';
-	export let node : string = 'localhost';
+	export let node: string = 'localhost';
 	import { CurrentHostIP } from '$lib/vars';
-	import { type SambaShare, type UserPermission } from '$lib/interface'
+	import { type SambaShare, type UserPermission } from '$lib/interface';
 	import { formatDateTime } from '$lib/index';
 	// import CreateSambaShareModal from '../../../../components/files/CreateSambaShareModal.svelte';
 	import UpdateSambaUserModal from '../../../../components/files/UpdateSambaUserModal.svelte';
@@ -26,7 +52,7 @@
 	// };
 
 	const path: string = '/samba/share';
-  	const description: string = 'Samba Share - FluteNAS Web Console';
+	const description: string = 'Samba Share - FluteNAS Web Console';
 	const title: string = 'FluteNAS Web Console - Samba Share';
 	const subtitle: string = 'Samba Share';
 	// let transitionParams = {
@@ -35,71 +61,76 @@
 	// 	easing: sineIn
 	// };
 
-	let shares :SambaShare[] = [];
-	$: refreshList($CurrentHostIP)
-	function refreshList(ip :string = $CurrentHostIP) {
+	let shares: SambaShare[] = [];
+	$: refreshList($CurrentHostIP);
+	function refreshList(ip: string = $CurrentHostIP) {
 		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
-			return
+			return;
 		}
 		loading = true;
-		console.log(ip)
+		console.log(ip);
 		const api = new FluteAPI();
-        api.post("/v1/samba-share/list", {}).then(resp => {
-			shares = resp.data.Shares;
-			loading = false;
-        }).catch(err => {
-            console.log(err)
-			loading = false;
-        })
+		api
+			.post('/v1/samba-share/list', {})
+			.then((resp) => {
+				shares = resp.data.Shares;
+				loading = false;
+			})
+			.catch((err) => {
+				console.log(err);
+				loading = false;
+			});
 	}
 
-	let createShareModalFlag :boolean = true
+	let createShareModalFlag: boolean = true;
 	function onClickCreateShare() {
-		console.log('open Create Samba Share Dialog')
-		createShareModalFlag = false
+		console.log('open Create Samba Share Dialog');
+		createShareModalFlag = false;
 	}
 
-	let smbStatus :boolean = false
+	let smbStatus: boolean = false;
 	function checkSmbStatus() {
 		const api = new FluteAPI();
-		api.post("/v1/samba-share/status", {"HostIP": $CurrentHostIP ? $CurrentHostIP : "127.0.0.1"}).then(resp => {
-			smbStatus = resp.data.Actived;
-        }).catch(err => {
-        })
+		api
+			.post('/v1/samba-share/status', { HostIP: $CurrentHostIP ? $CurrentHostIP : '127.0.0.1' })
+			.then((resp) => {
+				smbStatus = resp.data.Actived;
+			})
+			.catch((err) => {});
 	}
 
-	let deleteUserModalFlag :boolean = false
-	function onClickDeleteShare(idx :number) {
+	let deleteUserModalFlag: boolean = false;
+	function onClickDeleteShare(idx: number) {
 		// console.log('open Update Samba User Dialog')
 		// deleteUserModalFlag = true
 		// selectUser = users[idx]
 	}
 
-	function formatUserPermission(us :UserPermission[]) {
+	function formatUserPermission(us: UserPermission[]) {
 		let ustr = '';
 		us.forEach((u) => {
-			ustr += u.Username + ' : ' + formatPermission(u.Permission)
-		})
-		return ustr
+			ustr += u.Username + ' : ' + formatPermission(u.Permission);
+		});
+		return ustr;
 	}
 
-	function formatPermission(str :string) {
+	function formatPermission(str: string) {
 		switch (str) {
 			case 'r':
-				return 'Read Only'
+				return 'Read Only';
 			case 'rw':
-				return 'Read & Write'
+				return 'Read & Write';
 			default:
-				return ''
+				return '';
 		}
 	}
-	let selectedPath = ""
+	let selectedPath = '';
 
 	onMount(() => {
-		checkSmbStatus()
-	})
+		checkSmbStatus();
+	});
 </script>
 
 <MetaTag {path} {description} {title} {subtitle} />
@@ -111,36 +142,42 @@
 			<BreadcrumbItem>Samba</BreadcrumbItem>
 			<BreadcrumbItem>Shares</BreadcrumbItem>
 		</Breadcrumb>
-		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+		<Heading tag="h1" class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
 			Samba Shares
 		</Heading>
 		<!-- <p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
 			Active
 			</p> -->
-		
+
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div class="items-center justify-between gap-3 space-y-4 sm:flex sm:space-y-0">
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
-					<GradientButton color="pinkToOrange" on:click={onClickCreateShare} >Create</GradientButton>
+					<GradientButton color="pinkToOrange" on:click={onClickCreateShare}>Create</GradientButton>
 				</div>
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
 					<!-- <GradientButton color="pinkToOrange" >smb status: active</GradientButton> -->
-					{#if smbStatus }
-					<p>Samba Status is Actived</p>
+					{#if smbStatus}
+						<p>Samba Status is Actived</p>
 					{:else}
-					<p>Samba Status not Active</p>
+						<p>Samba Status not Active</p>
 					{/if}
 				</div>
 			</div>
 			<div slot="end" class="space-x-2">
 				<!-- on:click={() => toggle("")} -->
-				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList($CurrentHostIP)}} >
+				<Button
+					pill={true}
+					class="bg-gradient-to-br from-purple-600 to-blue-500 !p-2 text-white shadow-blue-500/50 hover:bg-gradient-to-bl focus:ring-blue-300 dark:shadow-blue-800/80 dark:focus:ring-blue-800"
+					on:click={() => {
+						refreshList($CurrentHostIP);
+					}}
+				>
 					{#if loading}
-					<RefreshOutline class="w-6 h-6 spin-fast"/>&nbsp; Loading... Please wait
+						<RefreshOutline class="spin-fast h-6 w-6" />&nbsp; Loading... Please wait
 					{:else}
-					<RefreshOutline class="w-6 h-6"/>
+						<RefreshOutline class="h-6 w-6" />
 					{/if}
 				</Button>
 				<!-- <Button class="whitespace-nowrap" >Add new product</Button> -->
@@ -165,12 +202,18 @@
 					<TableBodyCell class="p-4">{s.Status}</TableBodyCell>
 					<TableBodyCell class="p-4">
 						<div class="space-y-1">
-						{#each s.Users as u}
-							<div class="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md px-2 py-1 text-xs">
-								<span class="font-mono text-blue-800 dark:text-blue-300 font-medium">{u.Username}</span>
-								<span class="text-blue-600 dark:text-blue-400 ml-2 font-semibold">{formatPermission(u.Permission)}</span>
-							</div>
-						{/each}
+							{#each s.Users as u}
+								<div
+									class="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs dark:border-blue-800 dark:bg-blue-900/20"
+								>
+									<span class="font-mono font-medium text-blue-800 dark:text-blue-300"
+										>{u.Username}</span
+									>
+									<span class="ml-2 font-semibold text-blue-600 dark:text-blue-400"
+										>{formatPermission(u.Permission)}</span
+									>
+								</div>
+							{/each}
 						</div>
 					</TableBodyCell>
 					<TableBodyCell class="p-4">{formatDateTime(s.CreatedAt)}</TableBodyCell>
@@ -178,7 +221,12 @@
 						<!-- <Button size="sm" class="gap-2 px-3" on:click={() => onClickUpdateUser(index)}>
 							<EditOutline size="sm" /> Edit PWD
 						</Button> -->
-						<Button color="red" size="sm" class="gap-2 px-3" on:click={() => onClickDeleteShare(index)}>
+						<Button
+							color="red"
+							size="sm"
+							class="gap-2 px-3"
+							on:click={() => onClickDeleteShare(index)}
+						>
 							<TrashBinSolid size="sm" /> Delete
 						</Button>
 					</TableBodyCell>
@@ -191,16 +239,16 @@
 	<!-- <Hr /> -->
 	<div class="p-4">
 		<Heading
-		tag="h1"
-		size="xl"
-		class="mb-3 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl sm:leading-none sm:tracking-tight"
+			tag="h1"
+			size="xl"
+			class="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl sm:leading-none sm:tracking-tight dark:text-white"
 		>
-		FAQ
+			FAQ
 		</Heading>
-		<p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
+		<p class="mb-6 text-lg font-normal text-gray-500 sm:text-xl dark:text-gray-400">
 			frequently asked questions
 		</p>
-	
+
 		<!-- <div class="lg:columns-1 gap-8 space-y-10">
 			<div class="space-y-4">
 				<h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -242,4 +290,8 @@
 <DeleteSambaUserModal bind:open={deleteUserModalFlag} bind:user={selectUser} on:refresh_samba_user_list_msg={()=>refreshList()}></DeleteSambaUserModal> -->
 
 <!-- <CreateSambaShareModal bind:open={createShareModalFlag} on:refresh_samba_user_list_msg={()=>refreshList()}></CreateSambaShareModal> -->
-<CreateSambaShareDrawer bind:hidden={createShareModalFlag} bind:selectedPath={selectedPath} on:refresh_samba_user_list_msg={()=>refreshList()}></CreateSambaShareDrawer>
+<CreateSambaShareDrawer
+	bind:hidden={createShareModalFlag}
+	bind:selectedPath
+	on:refresh_samba_user_list_msg={() => refreshList()}
+></CreateSambaShareDrawer>

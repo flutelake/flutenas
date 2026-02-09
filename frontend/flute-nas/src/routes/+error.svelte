@@ -27,5 +27,4 @@
 
 <MetaTag {path} {description} {title} {subtitle} />
 
-
 <svelte:component this={component}></svelte:component>

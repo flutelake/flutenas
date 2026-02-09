@@ -15,8 +15,8 @@ const (
 	LocaleRussian    Locale = "ru-RU"
 	LocaleSpanish    Locale = "es-ES"
 	LocaleFrench     Locale = "fr-FR"
-	LocaleArabic     Locale = "ar-AR"
-	LocalePortuguese Locale = "pt-PT"
+	LocaleArabic     Locale = "ar-SA"
+	LocalePortuguese Locale = "pt-BR"
 )
 
 // 当前环境中的语言

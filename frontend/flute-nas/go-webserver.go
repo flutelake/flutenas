@@ -2,5 +2,5 @@ package flutenas
 
 import "embed"
 
-//go:embed build/*
+//go:embed all:build/*
 var FrontendFiles embed.FS

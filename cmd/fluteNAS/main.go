@@ -10,12 +10,15 @@ import (
 	"flutelake/fluteNAS/pkg/module/cache"
 	"flutelake/fluteNAS/pkg/module/db"
 	"flutelake/fluteNAS/pkg/module/flog"
+	"flutelake/fluteNAS/pkg/module/metricsvm"
 	"flutelake/fluteNAS/pkg/module/node"
+	"flutelake/fluteNAS/pkg/module/victoriametrics"
 	"flutelake/fluteNAS/pkg/server/apiserver"
 	"flutelake/fluteNAS/pkg/server/terminal"
 	"flutelake/fluteNAS/pkg/util"
 	"os"
 	"path/filepath"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -52,7 +55,7 @@ func main() {
 	server := apiserver.NewApiserver(c)
 	// 前端文件
 	server.SetFrontendFS(flutenasf.FrontendFiles)
-	privateKey, publicKey, err := util.GenerateRSAKeyPair(512)
+	privateKey, publicKey, err := util.GenerateRSAKeyPair(2048)
 	if err != nil {
 		flog.Fatal(err)
 	}
@@ -85,6 +88,11 @@ func main() {
 		flog.Fatal(err)
 	}
 	go cron.Start()
+
+	go victoriametrics.Launch()
+	time.Sleep(time.Second * 1)
+	metricsvm.Init()
+	metricsvm.InitPushFromEnv()
 
 	if err := server.Run(ctx); err != nil {
 		cancel()
@@ -151,6 +159,11 @@ func initController(cron *controller.CronJob) error {
 
 	// 15s 检查一次nfs share
 	err = cron.AddJob("nfsShare", "@every 15s", controller.NewNFSShareController().Do)
+	if err != nil {
+		return err
+	}
+
+	err = cron.AddJob("collectMetrics", "@every 15s", node.CollectSelfMonitoringMetrics)
 	if err != nil {
 		return err
 	}

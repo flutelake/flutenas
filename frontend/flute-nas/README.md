@@ -38,10 +38,12 @@ You can preview the production build with `npm run preview`.
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
 
 ## UI Framework
+
 - https://flowbite-svelte.com/admin-dashboard/crud/products
 - https://github.com/themesberg/flowbite-svelte-admin-dashboard/tree/main/src/routes/authentication
 
 ## JS Framework
+
 - https://svelte.dev/docs/svelte
 - https://kit.svelte.dev/docs/routing
 

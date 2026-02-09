@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { avatarPath } from '../variables'
+	import { avatarPath } from '../variables';
 	import { Avatar, Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-svelte';
 
 	export let name: string = ''; // "Neil Sims",
@@ -9,12 +9,15 @@
 	import { goto } from '$app/navigation';
 	function handleSignOut() {
 		const api = new FluteAPI();
-        api.post("/v1/logout", {}).then(resp => {
-			console.log('Sign out');
-			goto('/login')
-        }).catch(err => {
-            console.log(err)
-        })
+		api
+			.post('/v1/logout', {})
+			.then((resp) => {
+				console.log('Sign out');
+				goto('/login');
+			})
+			.catch((err) => {
+				console.log(err);
+			});
 	}
 </script>
 

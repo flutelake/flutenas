@@ -2,10 +2,14 @@ package node
 
 import (
 	"fmt"
+	"os"
 	"testing"
 )
 
 func TestExec_Command1(t *testing.T) {
+	if os.Getenv("FLUTENAS_ENABLE_SSH_TESTS") != "1" {
+		t.Skip("ssh tests disabled")
+	}
 	client := NewExec()
 	client.SetHost("10.0.1.10")
 	if err := client.Connect(); err != nil {
@@ -20,6 +24,9 @@ func TestExec_Command1(t *testing.T) {
 }
 
 func TestExec_Command2(t *testing.T) {
+	if os.Getenv("FLUTENAS_ENABLE_SSH_TESTS") != "1" {
+		t.Skip("ssh tests disabled")
+	}
 	client := NewExec()
 	client.SetHost("127.0.0.1")
 	if err := client.Connect(); err != nil {

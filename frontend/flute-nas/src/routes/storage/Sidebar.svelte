@@ -66,7 +66,7 @@
 				'Server Status': '/storage/nfs/status',
 				Directories: '/storage/nfs/shares'
 			}
-		},
+		}
 		// { name: 'Settings', icon: CogOutline, href: '/settings' },
 		// {
 		// 	name: 'Pages',

@@ -17,52 +17,56 @@
 	import { ChevronDownOutline } from 'flowbite-svelte-icons';
 	import '../app.css';
 	import Users from '../data/users.json';
-	import { type Host } from '$lib/interface'
+	import { type Host } from '$lib/interface';
 	import { onMount } from 'svelte';
 	import { FluteAPI } from '$lib/api';
-	import { CurrentHostIP, CurrentHostIPKey } from '$lib/vars'
+	import { CurrentHostIP, CurrentHostIPKey } from '$lib/vars';
 	import { page } from '$app/stores';
 
 	export let fluid = true;
 	export let drawerHidden = false;
 	let hosts: Host[] = [];
-	let selectHost :Host;
+	let selectHost: Host;
 	// 节点下拉选择框选中的样式
-	let activeClass = 'text-green-500 dark:text-green-300 hover:text-green-700 dark:hover:text-green-500';
+	let activeClass =
+		'text-green-500 dark:text-green-300 hover:text-green-700 dark:hover:text-green-500';
 	$: activeUrl = $page.url.pathname;
-	
+
 	onMount(() => {
-		const api = new FluteAPI()
-		api.post("/v1/host/list", {}).then(resp => {
-			hosts = resp.data.Hosts
-			let existHostIP = sessionStorage.getItem(CurrentHostIPKey)
-			if (existHostIP) {
-				// CurrentHostIP.set(existHostIP)
-				selectHost = hosts.find(host => host.HostIP === existHostIP) || hosts[0]
-			} else {
-				selectHost = hosts[0]
-			}
-			// console.log(hosts)
-		}).catch(err => {
-			console.log(err)
-		})
+		const api = new FluteAPI();
+		api
+			.post('/v1/host/list', {})
+			.then((resp) => {
+				hosts = resp.data.Hosts;
+				let existHostIP = sessionStorage.getItem(CurrentHostIPKey);
+				if (existHostIP) {
+					// CurrentHostIP.set(existHostIP)
+					selectHost = hosts.find((host) => host.HostIP === existHostIP) || hosts[0];
+				} else {
+					selectHost = hosts[0];
+				}
+				// console.log(hosts)
+			})
+			.catch((err) => {
+				console.log(err);
+			});
 		// 读取当前目录下的文件
 		// readDir(dirPath)
-	})
+	});
 	let list = true;
 
 	function handleSelectHost(e: any) {
 		e.preventDefault();
-		console.log("select host: ", e.target.innerText)
-		const hostname = e.target.innerText
-		let sh = hosts.find(host => host.Hostname === hostname)
+		console.log('select host: ', e.target.innerText);
+		const hostname = e.target.innerText;
+		let sh = hosts.find((host) => host.Hostname === hostname);
 		if (sh) {
-			selectHost = sh
+			selectHost = sh;
 			// 更新全局变量
-			CurrentHostIP.set(selectHost.ID.toString())
-			sessionStorage.setItem(CurrentHostIPKey, selectHost.HostIP)
+			CurrentHostIP.set(selectHost.ID.toString());
+			sessionStorage.setItem(CurrentHostIPKey, selectHost.HostIP);
 		}
-		console.log(selectHost)
+		console.log(selectHost);
 	}
 </script>
 
@@ -79,30 +83,32 @@
 				alt="Flowbite Logo"
 			/>
 			<span
-				class="ml-px self-center whitespace-nowrap text-xl font-semibold dark:text-white sm:text-2xl"
+				class="ml-px self-center whitespace-nowrap text-xl font-semibold sm:text-2xl dark:text-white"
 			>
 				FluteNAS
 			</span>
 		</NavBrand>
 		<div class="hidden lg:block lg:ps-3">
 			{#if list}
-				<NavUl class="ml-2" activeUrl="{activeUrl}" activeClass="text-primary-600 dark:text-primary-500">
+				<NavUl class="ml-2" {activeUrl} activeClass="text-primary-600 dark:text-primary-500">
 					<NavLi href="/overview">Overview</NavLi>
 					<NavLi href="/terminal">Terminal</NavLi>
 					<NavLi href="/storage/devices">Storage</NavLi>
 					<NavLi href="/filestation">Files</NavLi>
 					<!-- <NavLi href="#top">Settings</NavLi> -->
 
-					<NavLi class="cursor-pointer primary">
+					<NavLi class="primary cursor-pointer">
 						{selectHost?.Hostname}
-						<ChevronDownOutline  class="ms-0 inline" />
+						<ChevronDownOutline class="ms-0 inline" />
 					</NavLi>
-					<Dropdown class="z-20 w-44" >
+					<Dropdown class="z-20 w-44">
 						{#each hosts as host}
 							{#if host.HostIP == selectHost.HostIP}
 								<DropdownItem class={activeClass}>{host.Hostname}</DropdownItem>
 							{:else}
-								<DropdownItem href="{host.HostIP}" on:click={handleSelectHost}>{host.Hostname}</DropdownItem>
+								<DropdownItem href={host.HostIP} on:click={handleSelectHost}
+									>{host.Hostname}</DropdownItem
+								>
 							{/if}
 							<!-- <a href="#" on:click={handleSelectHost}>{host.hostname}</a> -->
 							<!-- <DropdownItem href="{host.host_ip}" on:click={handleSelectHost}>{host.hostname}</DropdownItem> -->
@@ -115,7 +121,7 @@
 				</form>
 			{/if}
 		</div>
-		<div class="ms-auto flex items-center text-gray-500 dark:text-gray-400 sm:order-2">
+		<div class="ms-auto flex items-center text-gray-500 sm:order-2 dark:text-gray-400">
 			<Notifications />
 			<AppsMenu />
 			<DarkMode />

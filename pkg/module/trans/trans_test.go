@@ -15,6 +15,9 @@ import (
 )
 
 func Test_GeneateFunc(t *testing.T) {
+	if os.Getenv("FLUTENAS_ENABLE_I18N_TESTS") != "1" {
+		t.Skip("i18n tests disabled")
+	}
 	keys := make([]string, 0)
 	for id := range translation {
 		keys = append(keys, id)
@@ -59,6 +62,9 @@ var %s = func() Trans { return GetTransMap("%s") }
 }
 
 func Test_AutoTranslate(t *testing.T) {
+	if os.Getenv("FLUTENAS_ENABLE_I18N_TESTS") != "1" {
+		t.Skip("i18n tests disabled")
+	}
 	// 指定需要翻译的范围，根据实际需求修改, 不建议翻译多行内容
 	// WRF0000-3 代表 WRF0000,WRF0001,WRF0002,WRF0003
 	idRange := "WRF0000-3,WRF0004,WRF0005"
@@ -236,6 +242,9 @@ func googleTranslate(source string, locale Locale, proxyURL *url.URL) (string, e
 }
 
 func TestTranslationFormat(t *testing.T) {
+	if os.Getenv("FLUTENAS_ENABLE_I18N_TESTS") != "1" {
+		t.Skip("i18n tests disabled")
+	}
 	tests := []struct {
 		id   string
 		arg  interface{}

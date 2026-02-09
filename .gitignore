@@ -20,6 +20,7 @@ build/
 frontend/flute-nas/build/
 frontend/flute-nas/.svelte-kit/
 frontend/flowbite-svelte-admin-dashboard-main
+victoria-metrics-data
 
 # Dependencies
 frontend/flute-nas/node_modules/

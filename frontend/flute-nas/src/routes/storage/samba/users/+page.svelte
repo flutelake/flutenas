@@ -1,16 +1,42 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Drawer, Heading, Input, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toolbar, ToolbarButton, Badge, Hr, GradientButton } from 'flowbite-svelte';
-	import { CogSolid, DotsVerticalOutline, EditOutline, ExclamationCircleSolid, TrashBinSolid, RefreshOutline } from 'flowbite-svelte-icons';
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Checkbox,
+		Drawer,
+		Heading,
+		Input,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Toolbar,
+		ToolbarButton,
+		Badge,
+		Hr,
+		GradientButton
+	} from 'flowbite-svelte';
+	import {
+		CogSolid,
+		DotsVerticalOutline,
+		EditOutline,
+		ExclamationCircleSolid,
+		TrashBinSolid,
+		RefreshOutline
+	} from 'flowbite-svelte-icons';
 	import type { ComponentType } from 'svelte';
 	import { sineIn } from 'svelte/easing';
 	import MetaTag from '../../../../components/MetaTag.svelte';
 	import { FluteAPI } from '$lib/api';
 	import { DiskDevice } from '$lib/model';
 	// import SetMountPointModal from '../../../../components/storage/SetMountPointModal.svelte';
-	export let node : string = 'localhost';
+	export let node: string = 'localhost';
 	import { CurrentHostIP } from '$lib/vars';
-	import { type SambaUser } from '$lib/interface'
+	import { type SambaUser } from '$lib/interface';
 	import { formatDateTime } from '$lib/index';
 	import CreateSambaUserModal from '../../../../components/files/CreateSambaUserModal.svelte';
 	import UpdateSambaUserModal from '../../../../components/files/UpdateSambaUserModal.svelte';
@@ -24,7 +50,7 @@
 	};
 
 	const path: string = '/samba/users';
-  	const description: string = 'Samba Users - FluteNAS Web Console';
+	const description: string = 'Samba Users - FluteNAS Web Console';
 	const title: string = 'FluteNAS Web Console - Samba Users';
 	const subtitle: string = 'Samba Users';
 	let transitionParams = {
@@ -33,46 +59,48 @@
 		easing: sineIn
 	};
 
-	let users :SambaUser[] = [];
-	$: refreshList($CurrentHostIP)
-	function refreshList(ip :string = $CurrentHostIP) {
+	let users: SambaUser[] = [];
+	$: refreshList($CurrentHostIP);
+	function refreshList(ip: string = $CurrentHostIP) {
 		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
-			return
+			return;
 		}
 		loading = true;
-		console.log(ip)
+		console.log(ip);
 		const api = new FluteAPI();
-        api.post("/v1/samba-user/list", {}).then(resp => {
-			users = resp.data.Users;
-			loading = false;
-        }).catch(err => {
-            console.log(err)
-			loading = false;
-        })
+		api
+			.post('/v1/samba-user/list', {})
+			.then((resp) => {
+				users = resp.data.Users;
+				loading = false;
+			})
+			.catch((err) => {
+				console.log(err);
+				loading = false;
+			});
 	}
 
-	let createUserModalFlag :boolean = false
+	let createUserModalFlag: boolean = false;
 	function onClickCreateUser() {
-		console.log('open Create Samba User Dialog')
-		createUserModalFlag = true
+		console.log('open Create Samba User Dialog');
+		createUserModalFlag = true;
 	}
 
-	let updateUserModalFlag :boolean = false
-	let selectUser :SambaUser
-	function onClickUpdateUser(idx :number) {
-		console.log('open Update Samba User Dialog')
-		updateUserModalFlag = true
-		selectUser = users[idx]
-
+	let updateUserModalFlag: boolean = false;
+	let selectUser: SambaUser;
+	function onClickUpdateUser(idx: number) {
+		console.log('open Update Samba User Dialog');
+		updateUserModalFlag = true;
+		selectUser = users[idx];
 	}
 
-	let deleteUserModalFlag :boolean = false
-	function onClickDeleteUser(idx :number) {
-		console.log('open Update Samba User Dialog')
-		deleteUserModalFlag = true
-		selectUser = users[idx]
+	let deleteUserModalFlag: boolean = false;
+	function onClickDeleteUser(idx: number) {
+		console.log('open Update Samba User Dialog');
+		deleteUserModalFlag = true;
+		selectUser = users[idx];
 	}
 </script>
 
@@ -85,24 +113,30 @@
 			<BreadcrumbItem>Samba</BreadcrumbItem>
 			<BreadcrumbItem>Users</BreadcrumbItem>
 		</Breadcrumb>
-		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+		<Heading tag="h1" class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
 			Samba Users
 		</Heading>
-		
+
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div class="items-center justify-between gap-3 space-y-4 sm:flex sm:space-y-0">
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
-					<GradientButton color="pinkToOrange" on:click={onClickCreateUser} >Create</GradientButton>
+					<GradientButton color="pinkToOrange" on:click={onClickCreateUser}>Create</GradientButton>
 				</div>
 			</div>
 			<div slot="end" class="space-x-2">
 				<!-- on:click={() => toggle("")} -->
-				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList($CurrentHostIP)}} >
+				<Button
+					pill={true}
+					class="bg-gradient-to-br from-purple-600 to-blue-500 !p-2 text-white shadow-blue-500/50 hover:bg-gradient-to-bl focus:ring-blue-300 dark:shadow-blue-800/80 dark:focus:ring-blue-800"
+					on:click={() => {
+						refreshList($CurrentHostIP);
+					}}
+				>
 					{#if loading}
-					<RefreshOutline class="w-6 h-6 spin-fast"/>&nbsp; Loading... Please wait
+						<RefreshOutline class="spin-fast h-6 w-6" />&nbsp; Loading... Please wait
 					{:else}
-					<RefreshOutline class="w-6 h-6"/>
+						<RefreshOutline class="h-6 w-6" />
 					{/if}
 				</Button>
 				<!-- <Button class="whitespace-nowrap" >Add new product</Button> -->
@@ -128,7 +162,12 @@
 						<Button size="sm" class="gap-2 px-3" on:click={() => onClickUpdateUser(index)}>
 							<EditOutline size="sm" /> Edit PWD
 						</Button>
-						<Button color="red" size="sm" class="gap-2 px-3" on:click={() => onClickDeleteUser(index)}>
+						<Button
+							color="red"
+							size="sm"
+							class="gap-2 px-3"
+							on:click={() => onClickDeleteUser(index)}
+						>
 							<TrashBinSolid size="sm" /> Delete
 						</Button>
 					</TableBodyCell>
@@ -141,16 +180,16 @@
 	<Hr />
 	<div class="p-4">
 		<Heading
-		tag="h1"
-		size="xl"
-		class="mb-3 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl sm:leading-none sm:tracking-tight"
+			tag="h1"
+			size="xl"
+			class="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl sm:leading-none sm:tracking-tight dark:text-white"
 		>
-		FAQ
+			FAQ
 		</Heading>
-		<p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
+		<p class="mb-6 text-lg font-normal text-gray-500 sm:text-xl dark:text-gray-400">
 			frequently asked questions
 		</p>
-	
+
 		<!-- <div class="lg:columns-1 gap-8 space-y-10">
 			<div class="space-y-4">
 				<h3 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -187,6 +226,17 @@
 </main>
 
 <!-- <SetMountPointModal bind:open={openSetMountPointModal} bind:node={node} bind:disk={currentDevice} on:refesh_list_msg={()=>refreshList($CurrentHostIP)}></SetMountPointModal> -->
-<CreateSambaUserModal bind:open={createUserModalFlag} on:refresh_samba_user_list_msg={()=>refreshList()}></CreateSambaUserModal>
-<UpdateSambaUserModal bind:open={updateUserModalFlag} bind:user={selectUser} on:refresh_samba_user_list_msg={()=>refreshList()}></UpdateSambaUserModal>
-<DeleteSambaUserModal bind:open={deleteUserModalFlag} bind:user={selectUser} on:refresh_samba_user_list_msg={()=>refreshList()}></DeleteSambaUserModal>
+<CreateSambaUserModal
+	bind:open={createUserModalFlag}
+	on:refresh_samba_user_list_msg={() => refreshList()}
+></CreateSambaUserModal>
+<UpdateSambaUserModal
+	bind:open={updateUserModalFlag}
+	bind:user={selectUser}
+	on:refresh_samba_user_list_msg={() => refreshList()}
+></UpdateSambaUserModal>
+<DeleteSambaUserModal
+	bind:open={deleteUserModalFlag}
+	bind:user={selectUser}
+	on:refresh_samba_user_list_msg={() => refreshList()}
+></DeleteSambaUserModal>

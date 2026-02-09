@@ -97,6 +97,7 @@ func (s *Apiserver) Run(ctx context.Context) (err error) {
 				if errors.Is(err, fs.ErrNotExist) {
 					w.WriteHeader(http.StatusNotFound)
 					w.Header().Set("Content-Type", "text/html")
+					flog.Infof("WebServer [%s %s], file not exist", r.Method, absolute)
 					w.Write(index)
 					return
 				}
@@ -111,7 +112,7 @@ func (s *Apiserver) Run(ctx context.Context) (err error) {
 	} else {
 		// 开发环境由前端Webserver提供服务
 		// develop for frontend route
-		targetURL, err := url.Parse("http://10.0.1.106:5173")
+		targetURL, err := url.Parse("http://127.0.0.1:5173")
 		if err != nil {
 			flog.Fatalf("Invalid frontend proxy target URL, %v", err)
 		}

@@ -1,21 +1,42 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Breadcrumb, BreadcrumbItem, Button, Checkbox, Heading, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Toolbar, Hr, GradientButton } from 'flowbite-svelte';
-	import { TrashBinSolid, RefreshOutline, LinkOutline, ClipboardSolid, CheckOutline } from 'flowbite-svelte-icons';
+	import {
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Checkbox,
+		Heading,
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Toolbar,
+		Hr,
+		GradientButton
+	} from 'flowbite-svelte';
+	import {
+		TrashBinSolid,
+		RefreshOutline,
+		LinkOutline,
+		ClipboardSolid,
+		CheckOutline
+	} from 'flowbite-svelte-icons';
 	import MetaTag from '../../../../components/MetaTag.svelte';
 	import { FluteAPI } from '$lib/api';
 	import { CurrentHostIP } from '$lib/vars';
-	import { type NFSExport, type NFSExportAcl } from '$lib/interface'
+	import { type NFSExport, type NFSExportAcl } from '$lib/interface';
 	import { formatDateTime } from '$lib/index';
 	import CreateNfsShareDrawer from '../../../../components/files/CreateNfsShareDrawer.svelte';
-import DeleteNfsShareModal from '../../../../components/files/DeleteNfsShareModal.svelte';
-import MountCommandModal from '../../../../components/files/MountCommandModal.svelte';
+	import DeleteNfsShareModal from '../../../../components/files/DeleteNfsShareModal.svelte';
+	import MountCommandModal from '../../../../components/files/MountCommandModal.svelte';
 
 	// let hidden: boolean = true; // modal control
 	let loading: boolean = false;
 
 	const path: string = '/nfs/share';
-  	const description: string = 'NFS Share - FluteNAS Web Console';
+	const description: string = 'NFS Share - FluteNAS Web Console';
 	const title: string = 'FluteNAS Web Console - NFS Share';
 	const subtitle: string = 'NFS Share';
 	// let transitionParams = {
@@ -24,95 +45,100 @@ import MountCommandModal from '../../../../components/files/MountCommandModal.sv
 	// 	easing: sineIn
 	// };
 
-	let shares :NFSExport[] = [];
-	function refreshList(ip :string = "127.0.0.1") {
+	let shares: NFSExport[] = [];
+	function refreshList(ip: string = '127.0.0.1') {
 		// console.log('refreshList, ip: ', ip)
 		if (loading) {
 			// 防重复点击
-			return
+			return;
 		}
 		loading = true;
-		console.log(ip)
+		console.log(ip);
 		const api = new FluteAPI();
-        api.post("/v1/nfs-share/list", {"HostIP": ip}).then(resp => {
-			console.log('API response:', resp); // 添加调试信息
-			shares = Array.isArray(resp.data?.Exports) ? resp.data.Exports : [];
-			console.log('Shares after update:', shares); // 添加调试信息
-			loading = false;
-        }).catch(err => {
-            console.log(err)
-			shares = []; // Ensure shares is always an array
-			loading = false;
-        })
+		api
+			.post('/v1/nfs-share/list', { HostIP: ip })
+			.then((resp) => {
+				console.log('API response:', resp); // 添加调试信息
+				shares = Array.isArray(resp.data?.Exports) ? resp.data.Exports : [];
+				console.log('Shares after update:', shares); // 添加调试信息
+				loading = false;
+			})
+			.catch((err) => {
+				console.log(err);
+				shares = []; // Ensure shares is always an array
+				loading = false;
+			});
 	}
 
-	let createShareModalFlag :boolean = true
+	let createShareModalFlag: boolean = true;
 	function onClickCreateShare() {
-		console.log('open Create NFS Share Dialog')
-		createShareModalFlag = false
+		console.log('open Create NFS Share Dialog');
+		createShareModalFlag = false;
 	}
 
-	let nfsStatus :boolean = false
+	let nfsStatus: boolean = false;
 	function checkNfsStatus() {
 		const api = new FluteAPI();
-		api.post("/v1/nfs-share/status", {"HostIP": $CurrentHostIP ? $CurrentHostIP : "127.0.0.1"}).then(resp => {
-			nfsStatus = resp.data.Actived;
-        }).catch(err => {
-        })
+		api
+			.post('/v1/nfs-share/status', { HostIP: $CurrentHostIP ? $CurrentHostIP : '127.0.0.1' })
+			.then((resp) => {
+				nfsStatus = resp.data.Actived;
+			})
+			.catch((err) => {});
 	}
 
-	let deleteUserModalFlag :boolean = false
-let selectedShare :NFSExport | null = null
-let mountCommandModalFlag :boolean = false
-let selectedMountShare :NFSExport | null = null
-	
-function onClickDeleteShare(idx :number) {
-	selectedShare = shares[idx];
-	deleteUserModalFlag = true;
-}
+	let deleteUserModalFlag: boolean = false;
+	let selectedShare: NFSExport | null = null;
+	let mountCommandModalFlag: boolean = false;
+	let selectedMountShare: NFSExport | null = null;
 
-function onClickMountCommand(idx :number) {
-	selectedMountShare = shares[idx];
-	mountCommandModalFlag = true;
-}
+	function onClickDeleteShare(idx: number) {
+		selectedShare = shares[idx];
+		deleteUserModalFlag = true;
+	}
 
-	function formatUserPermission(us :NFSExportAcl[]) {
+	function onClickMountCommand(idx: number) {
+		selectedMountShare = shares[idx];
+		mountCommandModalFlag = true;
+	}
+
+	function formatUserPermission(us: NFSExportAcl[]) {
 		if (!Array.isArray(us) || us.length === 0) {
 			return '';
 		}
-		
+
 		// If only one ACL, return simple format
 		if (us.length === 1) {
 			return `${us[0].IPRange} : ${formatPermission(us[0].Permission)}`;
 		}
-		
+
 		// For multiple ACLs, create a formatted list with better separation
 		const aclEntries = us.map((u) => {
 			return `• ${u.IPRange} : ${formatPermission(u.Permission)}`;
 		});
-		
+
 		// Join with line breaks for better readability, add spacing between entries
 		return aclEntries.join(' \\n ');
 	}
 
-	function formatPermission(str :string) {
+	function formatPermission(str: string) {
 		switch (str) {
 			case 'RO':
-				return 'Read Only'
+				return 'Read Only';
 			case 'RW':
-				return 'Read & Write'
+				return 'Read & Write';
 			case 'None':
-				return 'Deny Access'
+				return 'Deny Access';
 			default:
-				return ''
+				return '';
 		}
 	}
-	let selectedPath = ""
+	let selectedPath = '';
 
 	onMount(() => {
-		checkNfsStatus()
-		refreshList($CurrentHostIP)
-	})
+		checkNfsStatus();
+		refreshList($CurrentHostIP);
+	});
 </script>
 
 <MetaTag {path} {description} {title} {subtitle} />
@@ -124,36 +150,42 @@ function onClickMountCommand(idx :number) {
 			<BreadcrumbItem>NFS</BreadcrumbItem>
 			<BreadcrumbItem>Shares</BreadcrumbItem>
 		</Breadcrumb>
-		<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+		<Heading tag="h1" class="text-xl font-semibold text-gray-900 sm:text-2xl dark:text-white">
 			NFS Shares
 		</Heading>
 		<!-- <p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
 			Active
 			</p> -->
-		
+
 		<Toolbar embedded class="w-full py-4 text-gray-500 dark:text-gray-400">
 			<div class="items-center justify-between gap-3 space-y-4 sm:flex sm:space-y-0">
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
-					<GradientButton color="pinkToOrange" on:click={onClickCreateShare} >Create</GradientButton>
+					<GradientButton color="pinkToOrange" on:click={onClickCreateShare}>Create</GradientButton>
 				</div>
 				<div class="flex items-center space-x-4">
 					<!-- <GradientButton color="purpleToBlue" ></GradientButton> -->
 					<!-- <GradientButton color="pinkToOrange" >nfs status: active</GradientButton> -->
-					{#if nfsStatus }
-					<p>NFS Status is Active</p>
+					{#if nfsStatus}
+						<p>NFS Status is Active</p>
 					{:else}
-					<p>NFS Status not Active</p>
+						<p>NFS Status not Active</p>
 					{/if}
 				</div>
 			</div>
 			<div slot="end" class="space-x-2">
 				<!-- on:click={() => toggle("")} -->
-				<Button pill={true} class="!p-2 text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-blue-300 dark:focus:ring-blue-800 shadow-blue-500/50 dark:shadow-blue-800/80" on:click={() => {refreshList($CurrentHostIP)}} >
+				<Button
+					pill={true}
+					class="bg-gradient-to-br from-purple-600 to-blue-500 !p-2 text-white shadow-blue-500/50 hover:bg-gradient-to-bl focus:ring-blue-300 dark:shadow-blue-800/80 dark:focus:ring-blue-800"
+					on:click={() => {
+						refreshList($CurrentHostIP);
+					}}
+				>
 					{#if loading}
-					<RefreshOutline class="w-6 h-6 spin-fast"/>&nbsp; Loading... Please wait
+						<RefreshOutline class="spin-fast h-6 w-6" />&nbsp; Loading... Please wait
 					{:else}
-					<RefreshOutline class="w-6 h-6"/>
+						<RefreshOutline class="h-6 w-6" />
 					{/if}
 				</Button>
 				<!-- <Button class="whitespace-nowrap" >Add new product</Button> -->
@@ -164,7 +196,10 @@ function onClickMountCommand(idx :number) {
 		<TableHead class="border-y border-gray-200 bg-gray-100 dark:border-gray-700">
 			<TableHeadCell class="w-4 p-4"><Checkbox /></TableHeadCell>
 			{#each ['ID', 'ShareName', 'Shared Dir Path', 'Pseudo Path', 'Status', 'Default ACL', 'Access Control', 'CreateAt', 'Mount', 'Action'] as title}
-				<TableHeadCell class="ps-4 font-normal" style={title === 'Access Control' ? 'min-width: 200px' : ''}>{title}</TableHeadCell>
+				<TableHeadCell
+					class="ps-4 font-normal"
+					style={title === 'Access Control' ? 'min-width: 200px' : ''}>{title}</TableHeadCell
+				>
 			{/each}
 		</TableHead>
 		<TableBody>
@@ -178,8 +213,12 @@ function onClickMountCommand(idx :number) {
 					<TableBodyCell class="p-4">{s.Status}</TableBodyCell>
 					<TableBodyCell class="p-4">
 						<!-- <span class="text-xs font-medium px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md"> -->
-						<div class="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md px-2 py-1 text-xs">
-							<span class="font-mono text-blue-800 dark:text-blue-300 font-medium">{formatPermission(s.DefaultACL)}</span>
+						<div
+							class="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs dark:border-blue-800 dark:bg-blue-900/20"
+						>
+							<span class="font-mono font-medium text-blue-800 dark:text-blue-300"
+								>{formatPermission(s.DefaultACL)}</span
+							>
 						</div>
 						<!-- </span> -->
 					</TableBodyCell>
@@ -187,19 +226,30 @@ function onClickMountCommand(idx :number) {
 						<div class="space-y-1">
 							{#if s.Acls && s.Acls.length > 0}
 								{#each s.Acls as acl}
-									<div class="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md px-2 py-1 text-xs">
-										<span class="font-mono text-blue-800 dark:text-blue-300 font-medium">{acl.IPRange}</span>
-										<span class="text-blue-600 dark:text-blue-400 ml-2 font-semibold">{formatPermission(acl.Permission)}</span>
+									<div
+										class="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-2 py-1 text-xs dark:border-blue-800 dark:bg-blue-900/20"
+									>
+										<span class="font-mono font-medium text-blue-800 dark:text-blue-300"
+											>{acl.IPRange}</span
+										>
+										<span class="ml-2 font-semibold text-blue-600 dark:text-blue-400"
+											>{formatPermission(acl.Permission)}</span
+										>
 									</div>
 								{/each}
 							{:else}
-								<span class="text-gray-400 text-xs italic">No ACLs configured</span>
+								<span class="text-xs italic text-gray-400">No ACLs configured</span>
 							{/if}
 						</div>
 					</TableBodyCell>
 					<TableBodyCell class="p-4">{formatDateTime(s.CreatedAt)}</TableBodyCell>
 					<TableBodyCell class="p-4">
-						<Button color="blue" size="sm" class="gap-2 px-3" on:click={() => onClickMountCommand(index)}>
+						<Button
+							color="blue"
+							size="sm"
+							class="gap-2 px-3"
+							on:click={() => onClickMountCommand(index)}
+						>
 							<LinkOutline size="sm" /> Mount
 						</Button>
 					</TableBodyCell>
@@ -207,7 +257,12 @@ function onClickMountCommand(idx :number) {
 						<!-- <Button size="sm" class="gap-2 px-3" on:click={() => onClickUpdateUser(index)}>
 							<EditOutline size="sm" /> Edit PWD
 						</Button> -->
-						<Button color="red" size="sm" class="gap-2 px-3" on:click={() => onClickDeleteShare(index)}>
+						<Button
+							color="red"
+							size="sm"
+							class="gap-2 px-3"
+							on:click={() => onClickDeleteShare(index)}
+						>
 							<TrashBinSolid size="sm" /> Delete
 						</Button>
 					</TableBodyCell>
@@ -220,26 +275,28 @@ function onClickMountCommand(idx :number) {
 	<!-- <Hr /> -->
 	<div class="p-4">
 		<Heading
-		tag="h1"
-		size="xl"
-		class="mb-3 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl sm:leading-none sm:tracking-tight"
+			tag="h1"
+			size="xl"
+			class="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl sm:leading-none sm:tracking-tight dark:text-white"
 		>
-		FAQ
+			FAQ
 		</Heading>
-		<p class="mb-6 text-lg font-normal text-gray-500 dark:text-gray-400 sm:text-xl">
+		<p class="mb-6 text-lg font-normal text-gray-500 sm:text-xl dark:text-gray-400">
 			frequently asked questions
 		</p>
-	
-		<div class="lg:columns-1 gap-8 space-y-10">
+
+		<div class="gap-8 space-y-10 lg:columns-1">
 			<div class="space-y-4">
-				<h3 class="text-lg font-medium text-gray-900 dark:text-white">
-					Default ACL?
-				</h3>
+				<h3 class="text-lg font-medium text-gray-900 dark:text-white">Default ACL?</h3>
 				<p class="text-gray-600 dark:text-gray-400">
-					The default access control permissions apply to all users who access the shared directory. Therefore, in most cases, you should set the default access policy to “Deny access” and then configure access permissions separately for each client IP.
+					The default access control permissions apply to all users who access the shared directory.
+					Therefore, in most cases, you should set the default access policy to “Deny access” and
+					then configure access permissions separately for each client IP.
 				</p>
 				<p class="text-gray-600 dark:text-gray-400">
-					If you set the Default ACL to “Read & Write”, it means everyone has permission to access this shared directory, so there is no need to configure access control for specific clients.
+					If you set the Default ACL to “Read & Write”, it means everyone has permission to access
+					this shared directory, so there is no need to configure access control for specific
+					clients.
 				</p>
 			</div>
 
@@ -247,10 +304,8 @@ function onClickMountCommand(idx :number) {
 				<h3 class="text-lg font-medium text-gray-900 dark:text-white">
 					Client Access Control - Client IP formats
 				</h3>
-				<p class="text-gray-600 dark:text-gray-400">
-					Client IPs support the following formats:
-				</p>
-				<ul class="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
+				<p class="text-gray-600 dark:text-gray-400">Client IPs support the following formats:</p>
+				<ul class="list-inside list-disc space-y-1 text-gray-600 dark:text-gray-400">
 					<li>
 						Single IP:
 						<span class="font-mono">192.168.1.10</span>
@@ -283,20 +338,21 @@ function onClickMountCommand(idx :number) {
 <DeleteNfsShareModal bind:open={deleteUserModalFlag} bind:user={selectUser} on:refresh_nfs_share_list_msg={()=>refreshList()}></DeleteNfsShareModal> -->
 
 <!-- <CreateNfsShareModal bind:open={createShareModalFlag} on:refresh_nfs_share_list_msg={()=>refreshList()}></CreateNfsShareModal> -->
-<CreateNfsShareDrawer bind:hidden={createShareModalFlag} bind:selectedPath={selectedPath} on:refresh_nfs_share_list_msg={()=>refreshList()}></CreateNfsShareDrawer>
+<CreateNfsShareDrawer
+	bind:hidden={createShareModalFlag}
+	bind:selectedPath
+	on:refresh_nfs_share_list_msg={() => refreshList()}
+></CreateNfsShareDrawer>
 
 <!-- Delete Confirmation Modal -->
-<DeleteNfsShareModal 
-  bind:open={deleteUserModalFlag}
-  shareName={selectedShare ? selectedShare.Name : ''} 
-  shareId={selectedShare ? selectedShare.ID : 0}
-  on:refresh_nfs_share_list_msg={() => {
-    refreshList($CurrentHostIP);
-  }}
+<DeleteNfsShareModal
+	bind:open={deleteUserModalFlag}
+	shareName={selectedShare ? selectedShare.Name : ''}
+	shareId={selectedShare ? selectedShare.ID : 0}
+	on:refresh_nfs_share_list_msg={() => {
+		refreshList($CurrentHostIP);
+	}}
 />
 
 <!-- Mount Command Modal -->
-<MountCommandModal 
-  bind:open={mountCommandModalFlag}
-  share={selectedMountShare}
-/>
+<MountCommandModal bind:open={mountCommandModalFlag} share={selectedMountShare} />

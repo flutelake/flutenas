@@ -54,3 +54,21 @@ type SetMountPointRequest struct {
 
 type SetMountPointResponse struct {
 }
+
+type MkfsDiskRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+	Device string `json:"Device" validate:"required"`
+	FsType string `json:"FsType" validate:"required"`
+}
+
+type MkfsDiskResponse struct {
+	Device DiskDevice `json:"Device"`
+}
+
+type ListSupportedMkfsFilesystemsRequest struct {
+	HostIP string `json:"HostIP" validate:"required"`
+}
+
+type ListSupportedMkfsFilesystemsResponse struct {
+	FsTypes []string `json:"FsTypes"`
+}

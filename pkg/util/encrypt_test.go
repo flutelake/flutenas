@@ -6,7 +6,7 @@ import (
 )
 
 func TestGenerateRSAKeyPair(t *testing.T) {
-	gotPrivateKey, gotPublicKey, err := GenerateRSAKeyPair(512)
+	gotPrivateKey, gotPublicKey, err := GenerateRSAKeyPair(2048)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -17,7 +17,7 @@ func TestGenerateRSAKeyPair(t *testing.T) {
 }
 
 func TestRasEncrypto(t *testing.T) {
-	gotPrivateKey, gotPublicKey, err := GenerateRSAKeyPair(512)
+	gotPrivateKey, gotPublicKey, err := GenerateRSAKeyPair(2048)
 	if err != nil {
 		t.Fatal(err)
 	}

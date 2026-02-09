@@ -1,104 +1,147 @@
 <script lang="ts">
 	import { FileEntry } from '$lib/model';
-  import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell, Checkbox } from 'flowbite-svelte';
-  import { A } from 'flowbite-svelte';
+	import {
+		Table,
+		TableBody,
+		TableBodyCell,
+		TableBodyRow,
+		TableHead,
+		TableHeadCell,
+		Checkbox
+	} from 'flowbite-svelte';
+	import { A } from 'flowbite-svelte';
 	import { FolderOpenSolid, RefreshOutline } from 'flowbite-svelte-icons';
-  import { formatSize, formatDateTime } from '$lib/index';
-  import DeleteModal from './DeleteModal.svelte';
-  import { createEventDispatcher } from 'svelte';
+	import { formatSize, formatDateTime } from '$lib/index';
+	import DeleteModal from './DeleteModal.svelte';
+	import { createEventDispatcher } from 'svelte';
 	import { FluteAPI } from '$lib/api';
-    const dispatch = createEventDispatcher(); 
+	const dispatch = createEventDispatcher();
 
-  export let files: FileEntry[] = [];
-  export let dirPath : string = '/';
-  export let loading : boolean = false;
-  export let group: string[]= [];
+	export let files: FileEntry[] = [];
+	export let dirPath: string = '/';
+	export let loading: boolean = false;
+	export let group: string[] = [];
 
-  $: showGroup(group)
-  function showGroup(g:string[]) { console.log(g)}
-  function forward() {
-    const pathParts = dirPath.split('/').filter(Boolean);
-    pathParts.pop(); // 移除最后一个部分
-    dirPath = '/' + pathParts.join('/'); 
-  }
-
-  let downlodFilename :string = ''
-  function handleDownload() {
-		let p = dirPath.endsWith('/') ? dirPath + downlodFilename : dirPath + '/' + downlodFilename;
-    const api = new FluteAPI();
-    api.post("/v1/files/download", {'Path': p}).then((resp :any) => {
-      console.log(resp.data) 
-      // resp.data.Location
-      if (resp.data.Location) {
-        // 重定向到 Location URL
-        window.location.href = resp.data.Location;
-      } else {
-        console.error('No Location field in response data');
-      }
-    }).then(err => {
-      console.log(err);
-    })
+	$: showGroup(group);
+	function showGroup(g: string[]) {
+		console.log(g);
+	}
+	function forward() {
+		const pathParts = dirPath.split('/').filter(Boolean);
+		pathParts.pop(); // 移除最后一个部分
+		dirPath = '/' + pathParts.join('/');
 	}
 
-  let openDeleteModal :boolean = false;
-  let deleteFileName :string = '';
+	let downlodFilename: string = '';
+	function handleDownload() {
+		let p = dirPath.endsWith('/') ? dirPath + downlodFilename : dirPath + '/' + downlodFilename;
+		const api = new FluteAPI();
+		api
+			.post('/v1/files/download', { Path: p })
+			.then((resp: any) => {
+				console.log(resp.data);
+				// resp.data.Location
+				if (resp.data.Location) {
+					// 重定向到 Location URL
+					window.location.href = resp.data.Location;
+				} else {
+					console.error('No Location field in response data');
+				}
+			})
+			.then((err) => {
+				console.log(err);
+			});
+	}
+
+	let openDeleteModal: boolean = false;
+	let deleteFileName: string = '';
 </script>
 
 <Table hoverable={true}>
-    <TableHead>
-      <TableHeadCell class="p-4!">
-        <Checkbox disabled />
-      </TableHeadCell>
-      <TableHeadCell>FileName</TableHeadCell>
-      <TableHeadCell>Size</TableHeadCell>
-      <TableHeadCell>LastModify</TableHeadCell>
-      <TableHeadCell>Kind</TableHeadCell>
-      <TableHeadCell>Actions</TableHeadCell>
-    </TableHead>
-    <TableBody tableBodyClass="divide-y">
-        {#if loading}
-        <TableBodyRow>
-          <TableBodyCell><A href="#" on:click={forward}><RefreshOutline class="spin-fast"></RefreshOutline>&nbsp;Loading... Please wait </A></TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-        </TableBodyRow>
-        {/if}
-        {#if dirPath != '' && dirPath != '/'}
-        <TableBodyRow>
-          <TableBodyCell><A href="#" on:click={forward}><FolderOpenSolid></FolderOpenSolid>&nbsp;...</A></TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-          <TableBodyCell>&nbsp;</TableBodyCell>
-        </TableBodyRow>
-        {/if}
-        {#each files as file}
-        <TableBodyRow>
-            {#if file.isDir }
-            <TableHeadCell class="p-4!">
-               <Checkbox disabled/>
-            </TableHeadCell>
-            <TableBodyCell><A href="#" on:click={() => {dirPath = dirPath.endsWith('/')? dirPath + file.name : dirPath + '/' + file.name}}><FolderOpenSolid></FolderOpenSolid>&nbsp;{file.name}</A></TableBodyCell>
-            {:else}
-            <TableHeadCell class="p-4!">
-              <Checkbox value={file.name} bind:group />
-            </TableHeadCell>
-            <TableBodyCell>&nbsp;{file.name}</TableBodyCell>
-            {/if}
-            <TableBodyCell>{file.isDir ? '' : formatSize(file.size)}</TableBodyCell>
-              <TableBodyCell>{formatDateTime(file.lastMod)}</TableBodyCell>
-            <TableBodyCell>{file.isDir ? '' : file.kind}</TableBodyCell>
-            <TableBodyCell>
-            <A href="#" on:click={() => {downlodFilename = file.name; handleDownload()}}>Download</A>
-            <A href="#" on:click={() => {deleteFileName = file.name; openDeleteModal = true;}}>Delete</A>
-            <!-- <a href="/tables" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Review</a> -->
-            </TableBodyCell>
-        </TableBodyRow>
-        {/each}
-      
-    </TableBody>
+	<TableHead>
+		<TableHeadCell class="p-4!">
+			<Checkbox disabled />
+		</TableHeadCell>
+		<TableHeadCell>FileName</TableHeadCell>
+		<TableHeadCell>Size</TableHeadCell>
+		<TableHeadCell>LastModify</TableHeadCell>
+		<TableHeadCell>Kind</TableHeadCell>
+		<TableHeadCell>Actions</TableHeadCell>
+	</TableHead>
+	<TableBody tableBodyClass="divide-y">
+		{#if loading}
+			<TableBodyRow>
+				<TableBodyCell
+					><A href="#" on:click={forward}
+						><RefreshOutline class="spin-fast"></RefreshOutline>&nbsp;Loading... Please wait
+					</A></TableBodyCell
+				>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+			</TableBodyRow>
+		{/if}
+		{#if dirPath != '' && dirPath != '/'}
+			<TableBodyRow>
+				<TableBodyCell
+					><A href="#" on:click={forward}><FolderOpenSolid></FolderOpenSolid>&nbsp;...</A
+					></TableBodyCell
+				>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+				<TableBodyCell>&nbsp;</TableBodyCell>
+			</TableBodyRow>
+		{/if}
+		{#each files as file}
+			<TableBodyRow>
+				{#if file.isDir}
+					<TableHeadCell class="p-4!">
+						<Checkbox disabled />
+					</TableHeadCell>
+					<TableBodyCell
+						><A
+							href="#"
+							on:click={() => {
+								dirPath = dirPath.endsWith('/') ? dirPath + file.name : dirPath + '/' + file.name;
+							}}><FolderOpenSolid></FolderOpenSolid>&nbsp;{file.name}</A
+						></TableBodyCell
+					>
+				{:else}
+					<TableHeadCell class="p-4!">
+						<Checkbox value={file.name} bind:group />
+					</TableHeadCell>
+					<TableBodyCell>&nbsp;{file.name}</TableBodyCell>
+				{/if}
+				<TableBodyCell>{file.isDir ? '' : formatSize(file.size)}</TableBodyCell>
+				<TableBodyCell>{formatDateTime(file.lastMod)}</TableBodyCell>
+				<TableBodyCell>{file.isDir ? '' : file.kind}</TableBodyCell>
+				<TableBodyCell>
+					<A
+						href="#"
+						on:click={() => {
+							downlodFilename = file.name;
+							handleDownload();
+						}}>Download</A
+					>
+					<A
+						href="#"
+						on:click={() => {
+							deleteFileName = file.name;
+							openDeleteModal = true;
+						}}>Delete</A
+					>
+					<!-- <a href="/tables" class="font-medium text-primary-600 hover:underline dark:text-primary-500">Review</a> -->
+				</TableBodyCell>
+			</TableBodyRow>
+		{/each}
+	</TableBody>
 </Table>
 
-<DeleteModal bind:open={openDeleteModal} bind:dirPath={dirPath} bind:name={deleteFileName} on:refesh_list_msg={()=>dispatch('refesh_list_msg', '')}></DeleteModal>
+<DeleteModal
+	bind:open={openDeleteModal}
+	bind:dirPath
+	bind:name={deleteFileName}
+	on:refesh_list_msg={() => dispatch('refesh_list_msg', '')}
+></DeleteModal>

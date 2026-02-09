@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/db"
 	"flutelake/fluteNAS/pkg/module/flog"
@@ -193,4 +194,88 @@ func cancelMountPoint(w *apiserver.Response, r *apiserver.Request, in *model.Set
 
 	// 看看是否存在挂载的情况
 	w.Write(retcode.StatusOK(&model.SetMountPointResponse{}))
+}
+
+func MkfsDisk(w *apiserver.Response, r *apiserver.Request) {
+	in := &model.MkfsDiskRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusParamInvalid(nil))
+		return
+	}
+
+	host, err := GetHostInfo(w, in.HostIP)
+	if err != nil {
+		return
+	}
+
+	disks, err := node.DescribeDisk(host.HostIP)
+	if err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	var target *model.DiskDevice
+	for i := range disks {
+		if disks[i].Name == in.Device {
+			target = &disks[i]
+			break
+		}
+	}
+	if target == nil {
+		w.WriteError(errors.New("disk not found"), retcode.StatusParamInvalid(nil))
+		return
+	}
+	if target.IsSystemDisk {
+		w.WriteError(errors.New("system disk cannot be formatted"), retcode.StatusParamInvalid(nil))
+		return
+	}
+	if target.FsType != "" || target.MountPoint != "" {
+		w.WriteError(errors.New("disk is not empty"), retcode.StatusParamInvalid(nil))
+		return
+	}
+
+	if err := node.EnsureDiskEmptyForMkfs(host.HostIP, in.Device); err != nil {
+		w.WriteError(err, retcode.StatusParamInvalid(nil))
+		return
+	}
+
+	if err := node.MkfsDisk(host.HostIP, in.Device, in.FsType); err != nil {
+		flog.Errorf("mkfs failed, device: %s, fs: %s, err: %v", in.Device, in.FsType, err)
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	disks, err = node.DescribeDisk(host.HostIP)
+	if err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+	for i := range disks {
+		if disks[i].Name == in.Device {
+			out := &model.MkfsDiskResponse{Device: disks[i]}
+			w.Write(retcode.StatusOK(out))
+			return
+		}
+	}
+
+	w.WriteError(errors.New("disk not found after mkfs"), retcode.StatusError(nil))
+}
+
+func ListSupportedMkfsFilesystems(w *apiserver.Response, r *apiserver.Request) {
+	in := &model.ListSupportedMkfsFilesystemsRequest{}
+	if err := r.Unmarshal(in); err != nil {
+		w.WriteError(err, retcode.StatusParamInvalid(nil))
+		return
+	}
+
+	fsTypes, err := node.ListSupportedMkfsFilesystems(in.HostIP)
+	if err != nil {
+		w.WriteError(err, retcode.StatusError(nil))
+		return
+	}
+
+	out := &model.ListSupportedMkfsFilesystemsResponse{
+		FsTypes: fsTypes,
+	}
+	w.Write(retcode.StatusOK(out))
 }

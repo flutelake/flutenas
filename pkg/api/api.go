@@ -4,6 +4,7 @@ import (
 	v1 "flutelake/fluteNAS/pkg/api/v1"
 	"flutelake/fluteNAS/pkg/model"
 	"flutelake/fluteNAS/pkg/module/cache"
+	"flutelake/fluteNAS/pkg/module/metricsvm"
 	"flutelake/fluteNAS/pkg/server/apiserver"
 	"flutelake/fluteNAS/pkg/server/terminal"
 	"flutelake/fluteNAS/pkg/util"
@@ -25,6 +26,7 @@ func RegisterHandlersV1(
 
 	// check login status api
 	as.Register(as.NewRoute().Prefix(prefix).Path("/hello").Handler(HelloFluteNAS))
+	as.HandleFunc("/metrics", metricsvm.Handler)
 	// =================================== public apis ===================================== //
 	as.Register(as.NewRoute().Prefix(prefix).Path("/login").Handler(authApi.Login).AllowAnonymous(true))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/key").Handler(authApi.GetKey).AllowAnonymous(true))
@@ -49,6 +51,8 @@ func RegisterHandlersV1(
 	// disk device
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/list").Handler(v1.ListDiskDevices))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/set-mountpoint").Handler(v1.SetMountPoint))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/mkfs").Handler(v1.MkfsDisk))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/disk/mkfs-fstypes").Handler(v1.ListSupportedMkfsFilesystems))
 
 	// samba users
 	sambaUserServer := v1.SambaUserServer{}
@@ -84,6 +88,9 @@ func RegisterHandlersV1(
 	// hosts
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/list").Handler(v1.ListHosts))
 	as.Register(as.NewRoute().Prefix(prefix).Path("/host/system-info").Handler(v1.GetHostSystemInfo))
+	as.Register(as.NewRoute().Prefix(prefix).Path("/host/monitoring").Handler(v1.GetHostMonitoringMetrics))
+
+	as.Register(as.NewRoute().Prefix(prefix).Path("/metrics/query_range").Handler(v1.QueryVictoriaMetricsRange))
 }
 
 func HelloFluteNAS(w *apiserver.Response, r *apiserver.Request) {

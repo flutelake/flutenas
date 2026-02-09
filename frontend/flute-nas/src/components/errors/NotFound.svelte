@@ -27,7 +27,7 @@
 			<h1 class={h1Class}>
 				{title}
 			</h1>
-			<P class="mb-5 text-base font-normal text-gray-500 dark:text-gray-400 md:text-lg">
+			<P class="mb-5 text-base font-normal text-gray-500 md:text-lg dark:text-gray-400">
 				{description}
 			</P>
 			<Button href={btnHref}>
